@@ -13,6 +13,21 @@ API simples para gerar e gerenciar chaves de acesso gratuitas, ideal para integr
 
 ## Instalação
 
+### 🚀 Deploy no Railway (Recomendado)
+
+**Para colocar no ar rapidamente:**
+
+1. **Faça fork** deste repositório
+2. Acesse [Railway.app](https://railway.app)
+3. Clique em **"Deploy from GitHub repo"**
+4. Selecione este repositório
+5. Aguarde o deploy automático
+6. Sua API estará online!
+
+📖 **[Guia Completo de Deploy no Railway →](./RAILWAY_DEPLOY.md)**
+
+### 💻 Instalação Local
+
 ```bash
 git clone https://github.com/Kuroukai/Kuroukai-free-api.git
 cd Kuroukai-free-api
@@ -164,6 +179,30 @@ npm run dev
 # Verificar health da API
 curl http://localhost:3000/health
 ```
+
+## 🚀 Deploy em Produção
+
+### Railway (Gratuito)
+
+1. Faça fork deste repositório
+2. Conecte ao [Railway.app](https://railway.app)
+3. Deploy automático configurado!
+
+**Arquivos incluídos para Railway:**
+- `railway.json` - Configuração do Railway
+- `Procfile` - Definição de processo
+- `.env.example` - Variáveis de ambiente
+
+📖 **[Guia completo de deploy →](./RAILWAY_DEPLOY.md)**
+
+### Outras plataformas
+
+Esta API é compatível com:
+- Heroku
+- Vercel
+- DigitalOcean App Platform
+- Google Cloud Run
+- AWS Elastic Beanstalk
 
 ## Licença
 
