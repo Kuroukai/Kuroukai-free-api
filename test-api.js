@@ -3,7 +3,8 @@
 // Script de teste para demonstrar o uso da Kuroukai Free API
 // Execute com: node test-api.js
 
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://kuroukai-free-api.up.railway.app';
+// Alternativamente, use 'http://localhost:3000' para testar localmente
 
 async function testAPI() {
   console.log('🔧 Testando Kuroukai Free API...\n');
@@ -13,7 +14,8 @@ async function testAPI() {
     console.log('1. Verificando saúde da API...');
     const healthResponse = await fetch(`${API_URL}/health`);
     const health = await healthResponse.json();
-    console.log(`   ✅ API Status: ${health.msg}\n`);
+    console.log(`   ✅ API Status: ${health.msg || 'API está online'}`);
+    console.log(`   📊 Resposta completa: ${JSON.stringify(health)}\n`);
 
     // 2. Criar uma nova chave
     console.log('2. Criando nova chave para usuário de teste...');
@@ -26,6 +28,12 @@ async function testAPI() {
       })
     });
     const newKey = await createResponse.json();
+    console.log(`   📊 Resposta completa: ${JSON.stringify(newKey)}`);
+
+    if (!newKey || !newKey.data || !newKey.data.key_id) {
+      throw new Error(`Falha ao criar chave. Resposta: ${JSON.stringify(newKey)}`);
+    }
+
     console.log(`   ✅ Chave criada: ${newKey.data.key_id}`);
     console.log(`   📅 Expira em: ${newKey.data.expires_at}\n`);
 
@@ -35,6 +43,12 @@ async function testAPI() {
     console.log('3. Validando a chave criada...');
     const validateResponse = await fetch(`${API_URL}/api/keys/validate/${keyId}`);
     const validation = await validateResponse.json();
+    console.log(`   📊 Resposta de validação: ${JSON.stringify(validation)}`);
+
+    if (!validation || validation.error) {
+      throw new Error(`Falha ao validar a chave. Resposta: ${JSON.stringify(validation)}`);
+    }
+
     console.log(`   ✅ Chave válida: ${validation.valid}`);
     console.log(`   ⏰ Tempo restante: ${validation.time_remaining.formatted}`);
     console.log(`   📊 Usos: ${validation.usage_count}\n`);
@@ -43,7 +57,13 @@ async function testAPI() {
     console.log('4. Obtendo informações detalhadas da chave...');
     const infoResponse = await fetch(`${API_URL}/api/keys/info/${keyId}`);
     const info = await infoResponse.json();
-    console.log(`   📋 Status: ${info.data.status}`);
+    console.log(`   � Resposta de informações: ${JSON.stringify(info)}`);
+
+    if (!info || !info.data) {
+      throw new Error(`Falha ao obter informações da chave. Resposta: ${JSON.stringify(info)}`);
+    }
+
+    console.log(`   �📋 Status: ${info.data.status}`);
     console.log(`   👤 Usuário: ${info.data.user_id}`);
     console.log(`   🕒 Criada em: ${info.data.created_at}\n`);
 
@@ -51,7 +71,13 @@ async function testAPI() {
     console.log('5. Listando todas as chaves do usuário...');
     const userKeysResponse = await fetch(`${API_URL}/api/keys/user/test_user_12345`);
     const userKeys = await userKeysResponse.json();
-    console.log(`   📝 Total de chaves: ${userKeys.keys.length}`);
+    console.log(`   � Resposta de chaves do usuário: ${JSON.stringify(userKeys)}`);
+
+    if (!userKeys || !userKeys.keys) {
+      throw new Error(`Falha ao listar chaves do usuário. Resposta: ${JSON.stringify(userKeys)}`);
+    }
+
+    console.log(`   �📝 Total de chaves: ${userKeys.keys.length}`);
     userKeys.keys.forEach((key, index) => {
       console.log(`   ${index + 1}. ${key.key_id} - ${key.valid ? 'Válida' : 'Expirada'}`);
     });
@@ -70,8 +96,14 @@ async function testAPI() {
 
   } catch (error) {
     console.error('❌ Erro durante o teste:', error.message);
-    console.log('\n🔧 Certifique-se de que a API está rodando em http://localhost:3000');
-    console.log('   Execute: npm start');
+    console.log('\n🔧 Problemas possíveis:');
+    console.log('   1. A API pode estar offline ou indisponível');
+    console.log('   2. O endpoint da API pode ter mudado');
+    console.log('   3. A estrutura de resposta da API pode ter sido alterada');
+    console.log('\n🔍 Soluções:');
+    console.log(`   - Verifique se a API está acessível em ${API_URL}`);
+    console.log('   - Tente executar a API localmente com: npm start');
+    console.log('   - Verifique se a URL está correta no arquivo test-api.js');
   }
 }
 
