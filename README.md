@@ -94,12 +94,35 @@ npm start
 Retorna informações detalhadas sobre uma chave específica.
 
 ### 4. Listar Chaves do Usuário
+### 5. Deletar Chave
+
+**DELETE** `/api/keys/:keyId`
+
+Deleta uma chave específica pelo seu `keyId`.
+
+**Resposta:**
+```json
+{
+  "msg": "Key deleted successfully",
+  "code": 200,
+  "key_id": "uuid-da-chave"
+}
+```
+
+Se a chave não existir:
+```json
+{
+  "error": "Chave não encontrada",
+  "code": 404
+}
+```
+
 
 **GET** `/api/keys/user/:userId`
 
 Retorna todas as chaves associadas a um usuário.
 
-### 5. Endpoint Especial - Arquivo .js
+### 6. Endpoint Especial - Arquivo .js
 
 **GET** `/bind/:keyId.js`
 
@@ -108,7 +131,7 @@ Retorna um arquivo JavaScript que:
 - Exibe o JSON de resposta na tela
 - Retorna `{ "msg": "Binding is ok, you can now use it normally.", "code": 200 }` se válido
 
-### 6. Health Check
+### 7. Health Check
 
 **GET** `/health`
 

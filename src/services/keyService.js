@@ -17,25 +17,25 @@ class KeyService {
     return new Promise((resolve, reject) => {
       const keyId = generateKey();
       const expiresAt = getExpirationDate(hours);
-      
+
       const db = database.getDb();
-      const sql = `INSERT INTO access_keys (key_id, user_id, expires_at, ip_address) 
+      const sql = `INSERT INTO access_keys (key_id, user_id, expires_at, ip_address)
                    VALUES (?, ?, ?, ?)`;
-      
+
       db.run(sql, [keyId, userId, expiresAt, ipAddress], function(err) {
         if (err) {
           logger.error('Failed to create key in database:', err);
           reject(err);
           return;
         }
-        
+
         logger.info('Key created successfully:', {
           keyId,
           userId,
           hours,
           ipAddress
         });
-        
+
         resolve({
           key_id: keyId,
           user_id: userId,
@@ -55,14 +55,14 @@ class KeyService {
     return new Promise((resolve, reject) => {
       const db = database.getDb();
       const sql = 'SELECT * FROM access_keys WHERE key_id = ?';
-      
+
       db.get(sql, [keyId], (err, row) => {
         if (err) {
           logger.error('Failed to fetch key from database:', err);
           reject(err);
           return;
         }
-        
+
         resolve(row || null);
       });
     });
@@ -76,7 +76,7 @@ class KeyService {
   async validateKey(keyId) {
     try {
       const key = await this.getKeyById(keyId);
-      
+
       if (!key) {
         return {
           valid: false,
@@ -84,15 +84,15 @@ class KeyService {
           code: 404
         };
       }
-      
+
       const valid = isKeyValid(key);
       const timeInfo = getRemainingTime(key.expires_at);
-      
+
       // Update usage statistics if key is valid
       if (valid) {
         await this.updateKeyUsage(keyId);
       }
-      
+
       return {
         valid,
         key_id: keyId,
@@ -119,14 +119,14 @@ class KeyService {
     return new Promise((resolve, reject) => {
       const db = database.getDb();
       const sql = 'UPDATE access_keys SET usage_count = usage_count + 1, last_accessed = CURRENT_TIMESTAMP WHERE key_id = ?';
-      
+
       db.run(sql, [keyId], function(err) {
         if (err) {
           logger.error('Failed to update key usage:', err);
           reject(err);
           return;
         }
-        
+
         resolve();
       });
     });
@@ -141,18 +141,18 @@ class KeyService {
     return new Promise((resolve, reject) => {
       const db = database.getDb();
       const sql = 'SELECT * FROM access_keys WHERE user_id = ? ORDER BY created_at DESC';
-      
+
       db.all(sql, [userId], (err, rows) => {
         if (err) {
           logger.error('Failed to fetch user keys from database:', err);
           reject(err);
           return;
         }
-        
+
         const keys = rows.map(row => {
           const valid = isKeyValid(row);
           const timeInfo = getRemainingTime(row.expires_at);
-          
+
           return {
             key_id: row.key_id,
             valid,
@@ -164,12 +164,12 @@ class KeyService {
             last_accessed: row.last_accessed
           };
         });
-        
+
         logger.info('Retrieved user keys:', {
           userId,
           keyCount: keys.length
         });
-        
+
         resolve(keys);
       });
     });
@@ -183,17 +183,17 @@ class KeyService {
   async getKeyInfo(keyId) {
     try {
       const key = await this.getKeyById(keyId);
-      
+
       if (!key) {
         return {
           error: 'Key not found',
           code: 404
         };
       }
-      
+
       const valid = isKeyValid(key);
       const timeInfo = getRemainingTime(key.expires_at);
-      
+
       return {
         msg: valid ? 'Key is active' : 'Key is expired or inactive',
         code: valid ? 200 : 410,
@@ -213,6 +213,31 @@ class KeyService {
       logger.error('Error getting key info:', error);
       throw error;
     }
+  }
+
+  /**
+   * Delete a key by keyId
+   * @param {string} keyId - Key ID
+   * @returns {Promise<Object>} Resultado da deleção
+   */
+  async deleteKey(keyId) {
+    return new Promise((resolve) => {
+      const db = database.getDb();
+      const sql = 'DELETE FROM access_keys WHERE key_id = ?';
+      db.run(sql, [keyId], function(err) {
+        if (err) {
+          logger.error('Failed to delete key:', err);
+          resolve({ error: 'Failed to delete key', code: 500 });
+          return;
+        }
+        if (this.changes === 0) {
+          resolve({ error: 'Key not found', code: 404 });
+        } else {
+          logger.info('Key deleted successfully:', { keyId });
+          resolve({ success: true });
+        }
+      });
+    });
   }
 }
 

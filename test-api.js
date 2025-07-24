@@ -3,7 +3,7 @@
 // Script de teste para demonstrar o uso da Kuroukai Free API
 // Execute com: node test-api.js
 
-const API_URL = process.env.API_URL || 'http://localhost:3000';
+const API_URL = process.env.API_URL || 'https://kuroukai-free-api.up.railway.app/';
 // Use environment variable or default to localhost for testing
 
 async function testAPI() {
@@ -12,14 +12,14 @@ async function testAPI() {
   try {
     // 1. Verificar se a API está funcionando
     console.log('1. Verificando saúde da API...');
-    const healthResponse = await fetch(`${API_URL}/health`);
+    const healthResponse = await fetch(`${API_URL}health`);
     const health = await healthResponse.json();
     console.log(`   ✅ API Status: ${health.msg || 'API está online'}`);
     console.log(`   📊 Resposta completa: ${JSON.stringify(health)}\n`);
 
     // 2. Criar uma nova chave
     console.log('2. Criando nova chave para usuário de teste...');
-    const createResponse = await fetch(`${API_URL}/api/keys/create`, {
+    const createResponse = await fetch(`${API_URL}api/keys/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -41,7 +41,7 @@ async function testAPI() {
 
     // 3. Validar a chave
     console.log('3. Validando a chave criada...');
-    const validateResponse = await fetch(`${API_URL}/api/keys/validate/${keyId}`);
+    const validateResponse = await fetch(`${API_URL}api/keys/validate/${keyId}`);
     const validation = await validateResponse.json();
     console.log(`   📊 Resposta de validação: ${JSON.stringify(validation)}`);
 
@@ -55,7 +55,7 @@ async function testAPI() {
 
     // 4. Obter informações da chave
     console.log('4. Obtendo informações detalhadas da chave...');
-    const infoResponse = await fetch(`${API_URL}/api/keys/info/${keyId}`);
+    const infoResponse = await fetch(`${API_URL}api/keys/info/${keyId}`);
     const info = await infoResponse.json();
     console.log(`   � Resposta de informações: ${JSON.stringify(info)}`);
 
@@ -69,7 +69,7 @@ async function testAPI() {
 
     // 5. Listar chaves do usuário
     console.log('5. Listando todas as chaves do usuário...');
-    const userKeysResponse = await fetch(`${API_URL}/api/keys/user/test_user_12345`);
+    const userKeysResponse = await fetch(`${API_URL}api/keys/user/test_user_12345`);
     const userKeys = await userKeysResponse.json();
     console.log(`   � Resposta de chaves do usuário: ${JSON.stringify(userKeys)}`);
 
@@ -84,8 +84,8 @@ async function testAPI() {
 
     // 6. Demonstrar URL de binding
     console.log(`\n6. URL para validação visual (tela preta):`);
-    console.log(`   🌐 ${API_URL}/bind/${keyId}.js`);
-    console.log(`   🧪 Teste visual: ${API_URL}/test/${keyId}`);
+    console.log(`   🌐 ${API_URL}bind/${keyId}.js`);
+    console.log(`   🧪 Teste visual: ${API_URL}test/${keyId}`);
 
     console.log('\n✨ Todos os testes passaram com sucesso!');
     console.log('\n💡 Dicas para integração com Discord:');

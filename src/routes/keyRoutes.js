@@ -3,6 +3,8 @@ const keyController = require('../controllers/keyController');
 const { validateCreateKey, validateKeyId, validateUserId } = require('../middleware/validation');
 
 const router = express.Router();
+// Delete key
+router.delete('/:keyId', validateKeyId, keyController.deleteKey.bind(keyController));
 
 // Create new key
 router.post('/create', validateCreateKey, keyController.createKey.bind(keyController));

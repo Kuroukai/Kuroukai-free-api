@@ -8,15 +8,30 @@ const logger = new Logger(config.logging.level);
 
 class KeyController {
   /**
+   * Delete a key by keyId
+   */
+  async deleteKey(req, res) {
+    try {
+      const { keyId } = req.params;
+      const result = await keyService.deleteKey(keyId);
+      if (result.error) {
+        return res.status(result.code || 400).json({ error: result.error, code: result.code || 400 });
+      }
+      res.json({ msg: 'Key deleted successfully', code: 200, key_id: keyId });
+    } catch (error) {
+      handleDatabaseError(error, req, res);
+    }
+  }
+  /**
    * Create a new access key
    */
   async createKey(req, res) {
     try {
       const { user_id, hours } = req.body;
       const ipAddress = getClientIp(req);
-      
+
       const keyData = await keyService.createKey(user_id, hours, ipAddress);
-      
+
       res.json({
         msg: 'Key created successfully',
         code: 200,
@@ -34,14 +49,14 @@ class KeyController {
     try {
       const { keyId } = req.params;
       const result = await keyService.validateKey(keyId);
-      
+
       if (result.error) {
         return res.status(result.code).json({
           error: result.error,
           code: result.code
         });
       }
-      
+
       res.json(result);
     } catch (error) {
       handleDatabaseError(error, req, res);
@@ -55,14 +70,14 @@ class KeyController {
     try {
       const { keyId } = req.params;
       const result = await keyService.getKeyInfo(keyId);
-      
+
       if (result.error) {
         return res.status(result.code).json({
           error: result.error,
           code: result.code
         });
       }
-      
+
       res.json(result);
     } catch (error) {
       handleDatabaseError(error, req, res);
@@ -76,7 +91,7 @@ class KeyController {
     try {
       const { userId } = req.params;
       const keys = await keyService.getUserKeys(userId);
-      
+
       res.json({
         msg: `Found ${keys.length} keys for user`,
         code: 200,
@@ -95,9 +110,9 @@ class KeyController {
     try {
       const { keyId } = req.params;
       const key = await keyService.getKeyById(keyId);
-      
+
       let response;
-      
+
       if (!key) {
         response = {
           msg: "Binding failed, key not found.",
@@ -105,7 +120,7 @@ class KeyController {
         };
       } else {
         const valid = require('../utils/keyUtils').isKeyValid(key);
-        
+
         if (valid) {
           // Update usage statistics
           await keyService.updateKeyUsage(keyId);
@@ -120,46 +135,46 @@ class KeyController {
           };
         }
       }
-      
+
       // Generate safe JavaScript without eval
       const scriptContent = `
 // Kuroukai Free API - Key Validation
 (function() {
   'use strict';
-  
+
   const responseData = ${JSON.stringify(response)};
-  
+
   // Style the page
   document.body.style.backgroundColor = '#000000';
   document.body.style.color = '#ffffff';
   document.body.style.fontFamily = 'monospace';
   document.body.style.padding = '20px';
   document.body.style.margin = '0';
-  
+
   // Create response container
   const container = document.createElement('div');
   container.style.whiteSpace = 'pre-wrap';
   container.textContent = JSON.stringify(responseData, null, 2);
-  
+
   // Clear body and add content
   document.body.innerHTML = '';
   document.body.appendChild(container);
-  
+
   // Log to console
   console.log('Kuroukai API Response:', responseData);
 })();
       `;
-      
+
       res.set('Content-Type', 'application/javascript');
       res.send(scriptContent.trim());
     } catch (error) {
       logger.error('Error generating binding script:', error);
-      
+
       const errorScript = `
 // Kuroukai Free API - Error
 (function() {
   'use strict';
-  
+
   document.body.style.backgroundColor = '#000000';
   document.body.style.color = '#ff0000';
   document.body.style.fontFamily = 'monospace';
@@ -167,7 +182,7 @@ class KeyController {
   document.body.innerHTML = '<pre>Error loading validation script</pre>';
 })();
       `;
-      
+
       res.set('Content-Type', 'application/javascript');
       res.status(500).send(errorScript.trim());
     }

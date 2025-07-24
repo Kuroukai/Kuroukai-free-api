@@ -30,6 +30,7 @@ class AppController {
         'GET /api/keys/validate/:keyId': 'Validate a key',
         'GET /api/keys/info/:keyId': 'Get key information',
         'GET /api/keys/user/:userId': 'Get all keys for user',
+        'DELETE /api/keys/:keyId': 'Delete a key by keyId',
         'GET /bind/:keyId.js': 'Get validation JS file',
         'GET /test/:keyId': 'Test validation with visual interface',
         'GET /health': 'Health check'
@@ -46,7 +47,7 @@ class AppController {
    */
   getTestPage(req, res) {
     const { keyId } = req.params;
-    
+
     // Validate keyId format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(keyId)) {
@@ -64,7 +65,7 @@ class AppController {
 </html>
       `);
     }
-    
+
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -101,7 +102,7 @@ class AppController {
     </script>
 </body>
 </html>`;
-    
+
     res.send(html);
   }
 }
