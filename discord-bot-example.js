@@ -3,8 +3,15 @@
 
 const { Client, GatewayIntentBits, SlashCommandBuilder } = require('discord.js');
 
-// URL da API (ajuste conforme necessário)
-const API_BASE_URL = 'http://localhost:3000';
+// URL da API - CONFIGURE AQUI SUA URL DO RAILWAY
+// Exemplo para desenvolvimento local:
+// const API_BASE_URL = 'http://localhost:3000';
+
+// Exemplo para Railway (substitua pela sua URL):
+const API_BASE_URL = 'https://kuroukai-free-api-production.up.railway.app';
+
+// OU use variável de ambiente:
+// const API_BASE_URL = process.env.API_URL || 'http://localhost:3000';
 
 // Funções utilitárias para interagir com a API
 class KuroukaiAPI {
