@@ -3,8 +3,8 @@
 // Script de teste para demonstrar o uso da Kuroukai Free API
 // Execute com: node test-api.js
 
-const API_URL = 'https://kuroukai-free-api.up.railway.app';
-// Alternativamente, use 'http://localhost:3000' para testar localmente
+const API_URL = process.env.API_URL || 'http://localhost:3000';
+// Use environment variable or default to localhost for testing
 
 async function testAPI() {
   console.log('🔧 Testando Kuroukai Free API...\n');
