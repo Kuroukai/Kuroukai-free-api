@@ -1,13 +1,11 @@
 {
   "name": "kuroukai-free-api",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "API para gerar e gerenciar chaves de acesso gratuitas",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
-    "start:old": "node index.js",
     "dev": "nodemon src/app.js",
-    "dev:old": "nodemon index.js",
     "test": "node test-api.js"
   },
   "keywords": [
