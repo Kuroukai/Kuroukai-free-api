@@ -1,0 +1,219 @@
+const database = require('../config/database');
+const { generateKey, getExpirationDate, isKeyValid, getRemainingTime, getClientIp } = require('../utils/keyUtils');
+const Logger = require('../utils/logger');
+const config = require('../config');
+
+const logger = new Logger(config.logging.level);
+
+class KeyService {
+  /**
+   * Create a new access key
+   * @param {string} userId - User ID
+   * @param {number} hours - Validity in hours
+   * @param {string} ipAddress - Client IP address
+   * @returns {Promise<Object>} Created key data
+   */
+  async createKey(userId, hours, ipAddress) {
+    return new Promise((resolve, reject) => {
+      const keyId = generateKey();
+      const expiresAt = getExpirationDate(hours);
+      
+      const db = database.getDb();
+      const sql = `INSERT INTO access_keys (key_id, user_id, expires_at, ip_address) 
+                   VALUES (?, ?, ?, ?)`;
+      
+      db.run(sql, [keyId, userId, expiresAt, ipAddress], function(err) {
+        if (err) {
+          logger.error('Failed to create key in database:', err);
+          reject(err);
+          return;
+        }
+        
+        logger.info('Key created successfully:', {
+          keyId,
+          userId,
+          hours,
+          ipAddress
+        });
+        
+        resolve({
+          key_id: keyId,
+          user_id: userId,
+          expires_at: expiresAt,
+          valid_for_hours: hours
+        });
+      });
+    });
+  }
+
+  /**
+   * Get key by ID
+   * @param {string} keyId - Key ID
+   * @returns {Promise<Object|null>} Key data or null if not found
+   */
+  async getKeyById(keyId) {
+    return new Promise((resolve, reject) => {
+      const db = database.getDb();
+      const sql = 'SELECT * FROM access_keys WHERE key_id = ?';
+      
+      db.get(sql, [keyId], (err, row) => {
+        if (err) {
+          logger.error('Failed to fetch key from database:', err);
+          reject(err);
+          return;
+        }
+        
+        resolve(row || null);
+      });
+    });
+  }
+
+  /**
+   * Validate a key and update usage statistics
+   * @param {string} keyId - Key ID
+   * @returns {Promise<Object>} Validation result
+   */
+  async validateKey(keyId) {
+    try {
+      const key = await this.getKeyById(keyId);
+      
+      if (!key) {
+        return {
+          valid: false,
+          error: 'Key not found',
+          code: 404
+        };
+      }
+      
+      const valid = isKeyValid(key);
+      const timeInfo = getRemainingTime(key.expires_at);
+      
+      // Update usage statistics if key is valid
+      if (valid) {
+        await this.updateKeyUsage(keyId);
+      }
+      
+      return {
+        valid,
+        key_id: keyId,
+        user_id: key.user_id,
+        status: key.status,
+        created_at: key.created_at,
+        expires_at: key.expires_at,
+        time_remaining: timeInfo,
+        usage_count: key.usage_count + (valid ? 1 : 0),
+        code: valid ? 200 : 410
+      };
+    } catch (error) {
+      logger.error('Error validating key:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update key usage statistics
+   * @param {string} keyId - Key ID
+   * @returns {Promise<void>}
+   */
+  async updateKeyUsage(keyId) {
+    return new Promise((resolve, reject) => {
+      const db = database.getDb();
+      const sql = 'UPDATE access_keys SET usage_count = usage_count + 1, last_accessed = CURRENT_TIMESTAMP WHERE key_id = ?';
+      
+      db.run(sql, [keyId], function(err) {
+        if (err) {
+          logger.error('Failed to update key usage:', err);
+          reject(err);
+          return;
+        }
+        
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * Get all keys for a user
+   * @param {string} userId - User ID
+   * @returns {Promise<Array>} Array of user keys
+   */
+  async getUserKeys(userId) {
+    return new Promise((resolve, reject) => {
+      const db = database.getDb();
+      const sql = 'SELECT * FROM access_keys WHERE user_id = ? ORDER BY created_at DESC';
+      
+      db.all(sql, [userId], (err, rows) => {
+        if (err) {
+          logger.error('Failed to fetch user keys from database:', err);
+          reject(err);
+          return;
+        }
+        
+        const keys = rows.map(row => {
+          const valid = isKeyValid(row);
+          const timeInfo = getRemainingTime(row.expires_at);
+          
+          return {
+            key_id: row.key_id,
+            valid,
+            status: row.status,
+            created_at: row.created_at,
+            expires_at: row.expires_at,
+            time_remaining: timeInfo,
+            usage_count: row.usage_count,
+            last_accessed: row.last_accessed
+          };
+        });
+        
+        logger.info('Retrieved user keys:', {
+          userId,
+          keyCount: keys.length
+        });
+        
+        resolve(keys);
+      });
+    });
+  }
+
+  /**
+   * Get key information without updating usage
+   * @param {string} keyId - Key ID
+   * @returns {Promise<Object>} Key information
+   */
+  async getKeyInfo(keyId) {
+    try {
+      const key = await this.getKeyById(keyId);
+      
+      if (!key) {
+        return {
+          error: 'Key not found',
+          code: 404
+        };
+      }
+      
+      const valid = isKeyValid(key);
+      const timeInfo = getRemainingTime(key.expires_at);
+      
+      return {
+        msg: valid ? 'Key is active' : 'Key is expired or inactive',
+        code: valid ? 200 : 410,
+        data: {
+          key_id: keyId,
+          user_id: key.user_id,
+          valid,
+          status: key.status,
+          created_at: key.created_at,
+          expires_at: key.expires_at,
+          time_remaining: timeInfo,
+          usage_count: key.usage_count,
+          last_accessed: key.last_accessed
+        }
+      };
+    } catch (error) {
+      logger.error('Error getting key info:', error);
+      throw error;
+    }
+  }
+}
+
+module.exports = new KeyService();
