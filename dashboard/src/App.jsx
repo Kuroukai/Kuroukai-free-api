@@ -1,19 +1,23 @@
 import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
 import './App.css';
+import AdminDashboard from './components/AdminDashboard';
 import StatusBar from './components/StatusBar';
 import SearchBar from './components/SearchBar';
 import KeysTable from './components/KeysTable';
 
 function App() {
-  const [count, setCount] = useState(0);
   const [keys, setKeys] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // API base URL (change as needed)
-  const API_BASE = 'https://kuroukai-free-api.up.railway.app'; // 'http://localhost:3000' or 'https://kuroukai-free-api.up.railway.app'
+  // Check if we're in admin mode
+  const isAdminMode = window.ADMIN_MODE || false;
+  const apiBase = window.API_BASE || 'https://kuroukai-free-api.up.railway.app';
+
+  // If admin mode, render admin dashboard
+  if (isAdminMode) {
+    return <AdminDashboard />;
+  }
 
   // Search function integrated with API
   const handleSearch = async (type, value) => {
@@ -22,9 +26,9 @@ function App() {
     setKeys([]);
     let url = '';
     if (type === 'key') {
-      url = `${API_BASE}/api/keys/info/${value}`;
+      url = `${apiBase}/api/keys/info/${value}`;
     } else {
-      url = `${API_BASE}/api/keys/user/${value}`;
+      url = `${apiBase}/api/keys/user/${value}`;
     }
     try {
       const res = await fetch(url);
@@ -56,7 +60,7 @@ function App() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/keys/${keyId}`, { method: 'DELETE' });
+      const res = await fetch(`${apiBase}/api/keys/${keyId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Error deleting');
       setKeys(keys.filter(k => k.keyId !== keyId));
     } catch (err) {
@@ -70,7 +74,7 @@ function App() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/keys/block/${userId}`, { method: 'POST' });
+      const res = await fetch(`${apiBase}/api/keys/block/${userId}`, { method: 'POST' });
       if (!res.ok) throw new Error('Error blocking user');
       // Optionally: update key list if needed
     } catch (err) {
@@ -84,7 +88,7 @@ function App() {
     setError('');
     try {
       const key = keys.find(k => k.keyId === keyId);
-      const res = await fetch(`${API_BASE}/api/keys/${keyId}/active`, {
+      const res = await fetch(`${apiBase}/api/keys/${keyId}/active`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active: !key.active })
@@ -103,7 +107,7 @@ function App() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE}/api/keys/${keyId}/expiry`, {
+      const res = await fetch(`${apiBase}/api/keys/${keyId}/expiry`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ expiry: newExpiry })
@@ -118,7 +122,7 @@ function App() {
 
   return (
     <div className="dashboard-container">
-      <StatusBar apiBase={API_BASE} />
+      <StatusBar apiBase={apiBase} />
       <h1 className="dashboard-title">API Keys Control Panel</h1>
       <SearchBar onSearch={handleSearch} />
       {loading && <div className="dashboard-loading">Loading...</div>}

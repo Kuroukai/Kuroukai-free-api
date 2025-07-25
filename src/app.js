@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 
 // Import configuration
 const config = require('./config');
@@ -14,6 +15,7 @@ const { errorHandler, notFoundHandler, requestLogger } = require('./middleware/e
 // Import routes
 const keyRoutes = require('./routes/keyRoutes');
 const appRoutes = require('./routes/appRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 // Initialize logger
 const logger = new Logger(config.logging.level);
@@ -51,12 +53,16 @@ class Application {
 
     // CORS
     this.app.use(cors({
-      origin: config.security.corsOrigin
+      origin: config.security.corsOrigin,
+      credentials: true // Allow cookies for admin sessions
     }));
 
     // Rate limiting
     const limiter = rateLimit(config.rateLimit);
     this.app.use(limiter);
+
+    // Cookie parser for admin sessions
+    this.app.use(cookieParser());
 
     // Body parsing
     this.app.use(express.json({ limit: '10mb' }));
@@ -74,6 +80,9 @@ class Application {
   setupRoutes() {
     // API routes
     this.app.use('/api/keys', keyRoutes);
+
+    // Admin routes (with authentication)
+    this.app.use('/admin', adminRoutes);
 
     // App routes
     this.app.use('/', appRoutes);
