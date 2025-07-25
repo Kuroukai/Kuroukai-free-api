@@ -28,16 +28,16 @@ class Application {
     try {
       // Connect to database
       await database.connect();
-      
+
       // Setup middleware
       this.setupMiddleware();
-      
+
       // Setup routes
       this.setupRoutes();
-      
+
       // Setup error handlers
       this.setupErrorHandlers();
-      
+
       logger.info('Application initialized successfully');
     } catch (error) {
       logger.error('Failed to initialize application:', error);
@@ -48,62 +48,62 @@ class Application {
   setupMiddleware() {
     // Security middleware
     this.app.use(helmet(config.security.helmetOptions));
-    
+
     // CORS
     this.app.use(cors({
       origin: config.security.corsOrigin
     }));
-    
+
     // Rate limiting
     const limiter = rateLimit(config.rateLimit);
     this.app.use(limiter);
-    
+
     // Body parsing
     this.app.use(express.json({ limit: '10mb' }));
     this.app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-    
+
     // Request logging
     this.app.use(requestLogger);
-    
+
     // Static files (if needed)
     this.app.use(express.static('public'));
-    
+
     logger.info('Middleware configured');
   }
 
   setupRoutes() {
     // API routes
     this.app.use('/api/keys', keyRoutes);
-    
+
     // App routes
     this.app.use('/', appRoutes);
-    
+
     logger.info('Routes configured');
   }
 
   setupErrorHandlers() {
     // 404 handler
     this.app.use(notFoundHandler);
-    
+
     // Global error handler
     this.app.use(errorHandler);
-    
+
     logger.info('Error handlers configured');
   }
 
   async start() {
     try {
       await this.initialize();
-      
+
       this.server = this.app.listen(config.port, () => {
         logger.info(`Kuroukai Free API v2.0.0 running on port ${config.port}`);
         logger.info(`Environment: ${config.nodeEnv}`);
         logger.info(`Access at: http://localhost:${config.port}`);
       });
-      
+
       // Graceful shutdown handlers
       this.setupGracefulShutdown();
-      
+
     } catch (error) {
       logger.error('Failed to start application:', error);
       process.exit(1);
@@ -113,11 +113,11 @@ class Application {
   setupGracefulShutdown() {
     const gracefulShutdown = async (signal) => {
       logger.info(`Received ${signal}, shutting down gracefully...`);
-      
+
       if (this.server) {
         this.server.close(async () => {
           logger.info('HTTP server closed');
-          
+
           try {
             await database.close();
             logger.info('Database connection closed');
@@ -128,7 +128,7 @@ class Application {
           }
         });
       }
-      
+
       // Force shutdown after 10 seconds
       setTimeout(() => {
         logger.error('Forced shutdown after timeout');
