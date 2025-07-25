@@ -5,6 +5,37 @@ function AdminSettings() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [tempPassword, setTempPassword] = useState('');
+  const [passwordDuration, setPasswordDuration] = useState('24');
+  const [durationUnit, setDurationUnit] = useState('hours');
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const generateTempPassword = () => {
+    // Generate a secure random password using crypto.randomUUID
+    const uuid = crypto.randomUUID();
+    // Create a more readable format: first 8 chars + last 4 chars
+    const password = uuid.replace(/-/g, '').substring(0, 12);
+    setTempPassword(password);
+  };
+
+  const calculateExpiryTime = () => {
+    const now = new Date();
+    const duration = parseInt(passwordDuration);
+    
+    switch (durationUnit) {
+      case 'minutes':
+        return new Date(now.getTime() + duration * 60 * 1000);
+      case 'hours':
+        return new Date(now.getTime() + duration * 60 * 60 * 1000);
+      case 'days':
+        return new Date(now.getTime() + duration * 24 * 60 * 60 * 1000);
+      default:
+        return new Date(now.getTime() + 24 * 60 * 60 * 1000); // default 24 hours
+    }
+  };
 
   useEffect(() => {
     fetchSessions();
@@ -82,27 +113,77 @@ function AdminSettings() {
 
           <div className="setting-card">
             <div className="setting-info">
-              <h4>Default Admin Password</h4>
-              <p>Default password for admin access</p>
-              <code className="password-display">admin123</code>
-            </div>
-          </div>
-
-          <div className="setting-card">
-            <div className="setting-info">
-              <h4>Temporary Admin Password</h4>
-              <p>Temporary password for test users</p>
-              <code className="password-display">temp456</code>
-            </div>
-          </div>
-
-          <div className="setting-card">
-            <div className="setting-info">
-              <h4>Environment Variables</h4>
-              <p>Configure passwords via environment variables</p>
+              <h4>Admin Password Configuration</h4>
+              <p>Configure admin passwords securely via environment variables or configuration files</p>
               <div className="env-vars">
-                <code>ADMIN_DEFAULT_PASSWORD=your_default_password</code>
-                <code>ADMIN_TEMP_PASSWORD=your_temp_password</code>
+                <div className="env-item">
+                  <strong>Environment Variable:</strong>
+                  <code>ADMIN_PASSWORD=your_secure_password</code>
+                </div>
+                <div className="env-item">
+                  <strong>Configuration File:</strong>
+                  <code>config/admin.json</code> or <code>.env</code>
+                </div>
+                <div className="security-note">
+                  <span className="warning-icon">⚠️</span>
+                  <strong>Security Note:</strong> Never store passwords in source code or client-side files. 
+                  Use environment variables or secure configuration files on the server.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="setting-card">
+            <div className="setting-info">
+              <h4>Temporary Password Generator</h4>
+              <p>Generate secure temporary passwords for user access</p>
+              <div className="temp-password-section">
+                <div className="duration-controls">
+                  <label>Duration:</label>
+                  <input 
+                    type="number" 
+                    value={passwordDuration}
+                    onChange={(e) => setPasswordDuration(e.target.value)}
+                    min="1"
+                    className="duration-input"
+                  />
+                  <select 
+                    value={durationUnit}
+                    onChange={(e) => setDurationUnit(e.target.value)}
+                    className="duration-unit"
+                  >
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                    <option value="days">Days</option>
+                  </select>
+                </div>
+                
+                <button 
+                  onClick={generateTempPassword}
+                  className="generate-btn"
+                  type="button"
+                >
+                  🔐 Generate Temporary Password
+                </button>
+                
+                {tempPassword && (
+                  <div className="generated-password">
+                    <div className="password-display">
+                      <strong>Generated Password:</strong>
+                      <code className="temp-password">{tempPassword}</code>
+                      <button 
+                        onClick={() => navigator.clipboard.writeText(tempPassword)}
+                        className="copy-btn"
+                        title="Copy to clipboard"
+                      >
+                        📋
+                      </button>
+                    </div>
+                    <div className="expiry-info">
+                      <small>Expires: {calculateExpiryTime().toLocaleString()}</small>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -197,14 +278,6 @@ function AdminSettings() {
               <h4>API Version</h4>
               <p>Current version of Kuroukai Free API</p>
               <code className="version-display">v2.0.0</code>
-            </div>
-          </div>
-
-          <div className="setting-card">
-            <div className="setting-info">
-              <h4>Admin Panel URL</h4>
-              <p>Access URL for the admin dashboard</p>
-              <code className="url-display">{window.location.origin}/admin</code>
             </div>
           </div>
 

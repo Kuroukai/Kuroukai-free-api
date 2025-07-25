@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './KeysManager.css';
 
 function KeysManager() {
@@ -7,9 +7,56 @@ function KeysManager() {
   const [error, setError] = useState('');
   const [searchType, setSearchType] = useState('key');
   const [searchValue, setSearchValue] = useState('');
+  const [showingRecentKeys, setShowingRecentKeys] = useState(false);
 
   // API base URL
   const API_BASE = window.API_BASE || 'http://localhost:3000';
+
+  // Load recent keys on component mount
+  useEffect(() => {
+    loadRecentKeys();
+  }, [loadRecentKeys]);
+
+  const loadRecentKeys = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    setShowingRecentKeys(true);
+    
+    try {
+      // Fetch recent keys from the API (you may need to adjust this endpoint)
+      const res = await fetch(`${API_BASE}/api/keys/recent?limit=20`);
+      if (!res.ok) {
+        // If the recent endpoint doesn't exist, we'll show an empty state
+        if (res.status === 404) {
+          setKeys([]);
+          setShowingRecentKeys(false);
+          return;
+        }
+        throw new Error('Error fetching recent keys');
+      }
+      const data = await res.json();
+      
+      // Normalize keys to snake_case for table
+      const normalize = (item) => ({
+        keyId: item.key_id,
+        userId: item.user_id,
+        expiry: item.expires_at,
+        active: item.active !== false,
+        status: item.status || 'active',
+        created: item.created_at,
+        usage: item.usage_count || 0,
+        lastAccessed: item.last_accessed
+      });
+      
+      setKeys(Array.isArray(data) ? data.map(normalize) : []);
+    } catch (err) {
+      console.warn('Could not load recent keys:', err.message);
+      setError('');
+      setKeys([]);
+      setShowingRecentKeys(false);
+    }
+    setLoading(false);
+  }, [API_BASE]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -22,6 +69,7 @@ function KeysManager() {
     setLoading(true);
     setError('');
     setKeys([]);
+    setShowingRecentKeys(false);
     
     let url = '';
     if (searchType === 'key') {
@@ -58,6 +106,12 @@ function KeysManager() {
       setKeys([]);
     }
     setLoading(false);
+  };
+
+  const clearSearch = () => {
+    setSearchValue('');
+    setError('');
+    loadRecentKeys();
   };
 
   const handleDelete = async (keyId) => {
@@ -138,6 +192,12 @@ function KeysManager() {
       <div className="manager-header">
         <h2>API Keys Manager</h2>
         <p>Search and manage API keys by key ID or user ID</p>
+        {showingRecentKeys && (
+          <div className="recent-keys-indicator">
+            <span className="indicator-icon">🕐</span>
+            Showing recent keys (last 20)
+          </div>
+        )}
       </div>
 
       <div className="search-section">
@@ -167,6 +227,17 @@ function KeysManager() {
             >
               {loading ? <span className="loading-icon">⏳</span> : '🔍'} Search
             </button>
+            
+            {(searchValue || showingRecentKeys) && (
+              <button 
+                type="button" 
+                onClick={clearSearch}
+                className="clear-button"
+                disabled={loading}
+              >
+                🔄 {showingRecentKeys ? 'Refresh Recent' : 'Show Recent'}
+              </button>
+            )}
           </div>
         </form>
 
@@ -186,7 +257,7 @@ function KeysManager() {
           </div>
         )}
 
-        {!loading && keys.length === 0 && searchValue && !error && (
+        {!loading && keys.length === 0 && !showingRecentKeys && searchValue && !error && (
           <div className="empty-state">
             <div className="empty-icon">🔍</div>
             <h3>No keys found</h3>
@@ -194,11 +265,14 @@ function KeysManager() {
           </div>
         )}
 
-        {!loading && keys.length === 0 && !searchValue && !error && (
+        {!loading && keys.length === 0 && !searchValue && !showingRecentKeys && !error && (
           <div className="empty-state">
             <div className="empty-icon">🔑</div>
             <h3>Ready to search</h3>
-            <p>Enter a key ID or user ID above to get started</p>
+            <p>Enter a key ID or user ID above to search, or view recent keys below</p>
+            <button onClick={loadRecentKeys} className="load-recent-btn">
+              📋 Load Recent Keys
+            </button>
           </div>
         )}
 

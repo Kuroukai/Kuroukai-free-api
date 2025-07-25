@@ -8,7 +8,7 @@ export default function StatusBar({ apiBase = 'https://kuroukai-free-api.up.rail
   useEffect(() => {
     fetch(`${apiBase}/health`)
       .then(res => res.ok ? res.json() : Promise.reject())
-      .then(data => {
+      .then(() => {
         setStatus('Online');
         setOnline(true);
       })

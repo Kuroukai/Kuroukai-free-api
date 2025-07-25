@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import './App.css';
 import AdminDashboard from './components/AdminDashboard';
 import StatusBar from './components/StatusBar';
@@ -9,10 +9,52 @@ function App() {
   const [keys, setKeys] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showingRecentKeys, setShowingRecentKeys] = useState(false);
 
   // Check if we're in admin mode
   const isAdminMode = window.ADMIN_MODE || false;
   const apiBase = window.API_BASE || 'https://kuroukai-free-api.up.railway.app';
+
+  const loadRecentKeys = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    setShowingRecentKeys(true);
+    
+    try {
+      const res = await fetch(`${apiBase}/api/keys/recent?limit=20`);
+      if (!res.ok) {
+        if (res.status === 404) {
+          setKeys([]);
+          setShowingRecentKeys(false);
+          return;
+        }
+        throw new Error('Error fetching recent keys');
+      }
+      const data = await res.json();
+      
+      const normalize = (item) => ({
+        keyId: item.key_id,
+        userId: item.user_id,
+        expiry: item.expires_at,
+        active: item.active
+      });
+      
+      setKeys(Array.isArray(data) ? data.map(normalize) : []);
+    } catch (err) {
+      console.warn('Could not load recent keys:', err.message);
+      setError('');
+      setKeys([]);
+      setShowingRecentKeys(false);
+    }
+    setLoading(false);
+  }, [apiBase]);
+
+  // Load recent keys on component mount for non-admin view
+  useEffect(() => {
+    if (!isAdminMode) {
+      loadRecentKeys();
+    }
+  }, [isAdminMode, loadRecentKeys]);
 
   // If admin mode, render admin dashboard
   if (isAdminMode) {
@@ -24,6 +66,7 @@ function App() {
     setLoading(true);
     setError('');
     setKeys([]);
+    setShowingRecentKeys(false);
     let url = '';
     if (type === 'key') {
       url = `${apiBase}/api/keys/info/${value}`;
@@ -124,7 +167,11 @@ function App() {
     <div className="dashboard-container">
       <StatusBar apiBase={apiBase} />
       <h1 className="dashboard-title">API Keys Control Panel</h1>
-      <SearchBar onSearch={handleSearch} />
+      <SearchBar 
+        onSearch={handleSearch} 
+        onShowRecent={loadRecentKeys}
+        showingRecent={showingRecentKeys}
+      />
       {loading && <div className="dashboard-loading">Loading...</div>}
       {error && <div className="dashboard-error">{error}</div>}
       <KeysTable
