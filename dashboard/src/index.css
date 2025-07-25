@@ -1,0 +1,196 @@
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #181a20;
+  color: #e3e6ed;
+}
+
+.dashboard-container {
+  max-width: 900px;
+  margin: 40px auto 0 auto;
+  background: #23262f;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.18);
+  padding: 36px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-title {
+  text-align: center;
+  font-size: 2.3em;
+  font-weight: 700;
+  margin: 0 0 18px 0;
+  color: #6cb2fa;
+  letter-spacing: 1px;
+}
+
+.dashboard-loading {
+  text-align: center;
+  margin: 12px;
+  color: #6cb2fa;
+  font-weight: bold;
+}
+.dashboard-error {
+  color: #ff4c4c;
+  text-align: center;
+  margin: 12px;
+  font-weight: bold;
+}
+
+/* StatusBar dark */
+.status-bar {
+  width: 100%;
+  padding: 12px;
+  font-weight: bold;
+  text-align: center;
+  background: #23262f;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+.status-bar.online {
+  color: #4caf50;
+}
+.status-bar.offline {
+  color: #ff4c4c;
+}
+
+/* SearchBar dark */
+.search-bar {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+.search-bar select,
+.search-bar input {
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: 1px solid #353945;
+  border-radius: 6px;
+  background: #181a20;
+  color: #e3e6ed;
+}
+.search-bar button {
+  padding: 8px 20px;
+  background: #6cb2fa;
+  color: #181a20;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.search-bar button:hover {
+  background: #4a90e2;
+  color: #fff;
+}
+
+/* KeysTable dark */
+.keys-table {
+  width: 100%;
+  margin: 0 auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #23262f;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.keys-table th, .keys-table td {
+  border-bottom: 1px solid #353945;
+  padding: 12px 10px;
+  text-align: center;
+}
+.keys-table th {
+  background: #181a20;
+  font-weight: bold;
+  color: #6cb2fa;
+}
+.keys-table-empty {
+  text-align: center;
+  margin: 30px;
+  color: #888;
+}
+.keys-table button {
+  margin: 0 4px;
+  padding: 6px 14px;
+  font-size: 0.98rem;
+  border: none;
+  border-radius: 6px;
+  background: #353945;
+  color: #e3e6ed;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.keys-table button:hover {
+  background: #6cb2fa;
+  color: #181a20;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}

@@ -1,232 +1,201 @@
-# Kuroukai Free API
+# Kuroukai Free API v2.0 - Restructuring Documentation
 
-API simples para gerar e gerenciar chaves de acesso gratuitas, ideal para integração com bots do Discord.
+## Overview
 
-## Características
+This document outlines the major improvements and restructuring performed on the Kuroukai Free API to make it more secure, modular, and maintainable.
 
-- 🔑 Geração automática de chaves de acesso
-- ⏰ Sistema de expiração configurável
-- 👤 Associação de chaves a usuários (Discord ID)
-- 📊 Rastreamento de uso e estatísticas
-- 🔒 Validação segura de chaves
-- 🌐 Endpoint especial para arquivo .js com tela preta
+## Key Improvements
 
-## Instalação
+### 🔒 Security Enhancements
 
-### 🚀 Deploy no Railway (Recomendado)
+1. **Removed `eval()` vulnerability**:
+   - The original code used `eval()` in the binding script generation
+   - Replaced with safe DOM manipulation using `createElement()` and `textContent`
 
-**Para colocar no ar rapidamente:**
+2. **Improved Content Security Policy**:
+   - Removed unsafe directives (`'unsafe-inline'`, `'unsafe-eval'`)
+   - Implemented proper CSP headers with restrictive policies
 
-1. **Faça fork** deste repositório
-2. Acesse [Railway.app](https://railway.app)
-3. Clique em **"Deploy from GitHub repo"**
-4. Selecione este repositório
-5. Aguarde o deploy automático
-6. Sua API estará online!
+3. **Input Validation & Sanitization**:
+   - Added comprehensive validation middleware for all inputs
+   - UUID format validation for key IDs
+   - User input sanitization to prevent XSS attacks
+   - Proper bounds checking for numeric values
 
-📖 **[Guia Completo de Deploy no Railway →](./RAILWAY_DEPLOY.md)**
+4. **Rate Limiting**:
+   - Added express-rate-limit middleware to prevent abuse
+   - Configurable limits via environment variables
 
-### 💻 Instalação Local
+### 🏗️ Modular Architecture
+
+The monolithic `index.js` (407 lines) has been restructured into a clean modular architecture:
+
+```
+src/
+├── app.js                 # Main application entry point
+├── config/
+│   ├── index.js          # Configuration management
+│   └── database.js       # Database connection and setup
+├── controllers/
+│   ├── keyController.js  # Key-related endpoints
+│   └── appController.js  # App-related endpoints (health, info)
+├── middleware/
+│   ├── validation.js     # Input validation middleware
+│   └── errorHandler.js   # Error handling and logging
+├── services/
+│   └── keyService.js     # Business logic for key operations
+├── routes/
+│   ├── keyRoutes.js      # Key API routes
+│   └── appRoutes.js      # App routes
+└── utils/
+    ├── keyUtils.js       # Key utility functions
+    └── logger.js         # Logging utility
+```
+
+### 🛠️ Code Quality Improvements
+
+1. **Separation of Concerns**:
+   - Controllers handle HTTP requests/responses
+   - Services contain business logic
+   - Utilities provide reusable functions
+   - Middleware handles cross-cutting concerns
+
+2. **Error Handling**:
+   - Centralized error handling with proper logging
+   - Structured error responses with consistent format
+   - Database error handling with appropriate status codes
+
+3. **Configuration Management**:
+   - Environment-based configuration
+   - Centralized config with sensible defaults
+   - Support for production and development environments
+
+4. **Improved Logging**:
+   - Structured logging with configurable levels
+   - Request/response logging for debugging
+   - Security event logging
+
+### 🚀 Performance Improvements
+
+1. **Better Database Management**:
+   - Proper database connection lifecycle
+   - Promise-based database operations
+   - Improved error handling for database operations
+
+2. **Graceful Shutdown**:
+   - Proper cleanup of database connections
+   - Graceful server shutdown with timeout
+
+3. **Middleware Optimization**:
+   - Logical middleware ordering
+   - Request size limits
+   - Static file serving optimization
+
+## Migration Guide
+
+### Using the New Version
+
+The new version is fully backward compatible. All existing endpoints work exactly the same:
 
 ```bash
-git clone https://github.com/Kuroukai/Kuroukai-free-api.git
-cd Kuroukai-free-api
-npm install
+# Start the new version
 npm start
+
+# Or start the old version for comparison
+npm run start:old
 ```
 
-## API Endpoints
+### Environment Variables
 
-### 1. Criar Nova Chave
-
-**POST** `/api/keys/create`
-
-```json
-{
-  "user_id": "discord_user_id",
-  "hours": 24
-}
-```
-
-**Resposta:**
-```json
-{
-  "msg": "Key created successfully",
-  "code": 200,
-  "data": {
-    "key_id": "uuid-gerado",
-    "user_id": "discord_user_id",
-    "expires_at": "2024-01-01T12:00:00.000Z",
-    "valid_for_hours": 24
-  }
-}
-```
-
-### 2. Validar Chave
-
-**GET** `/api/keys/validate/:keyId`
-
-**Resposta:**
-```json
-{
-  "valid": true,
-  "key_id": "uuid-da-chave",
-  "user_id": "discord_user_id",
-  "status": "active",
-  "created_at": "2024-01-01T00:00:00.000Z",
-  "expires_at": "2024-01-02T00:00:00.000Z",
-  "time_remaining": {
-    "expired": false,
-    "remaining": 86400000,
-    "hours": 24,
-    "minutes": 0,
-    "formatted": "24h 0m"
-  },
-  "usage_count": 1,
-  "code": 200
-}
-```
-
-### 3. Informações da Chave
-
-**GET** `/api/keys/info/:keyId`
-
-Retorna informações detalhadas sobre uma chave específica.
-
-### 4. Listar Chaves do Usuário
-### 5. Deletar Chave
-
-**DELETE** `/api/keys/:keyId`
-
-Deleta uma chave específica pelo seu `keyId`.
-
-**Resposta:**
-```json
-{
-  "msg": "Key deleted successfully",
-  "code": 200,
-  "key_id": "uuid-da-chave"
-}
-```
-
-Se a chave não existir:
-```json
-{
-  "error": "Chave não encontrada",
-  "code": 404
-}
-```
-
-
-**GET** `/api/keys/user/:userId`
-
-Retorna todas as chaves associadas a um usuário.
-
-### 6. Endpoint Especial - Arquivo .js
-
-**GET** `/bind/:keyId.js`
-
-Retorna um arquivo JavaScript que:
-- Define o fundo da página como preto
-- Exibe o JSON de resposta na tela
-- Retorna `{ "msg": "Binding is ok, you can now use it normally.", "code": 200 }` se válido
-
-### 7. Health Check
-
-**GET** `/health`
-
-Verifica se a API está funcionando.
-
-## Exemplo de Uso com Discord Bot
-
-```javascript
-// Criar uma chave para um usuário
-const response = await fetch('http://localhost:3000/api/keys/create', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    user_id: interaction.user.id,
-    hours: 24
-  })
-});
-
-const data = await response.json();
-console.log('Nova chave criada:', data.data.key_id);
-
-// Validar uma chave
-const validationResponse = await fetch(`http://localhost:3000/api/keys/validate/${keyId}`);
-const validation = await validationResponse.json();
-
-if (validation.valid) {
-  console.log('Chave válida! Tempo restante:', validation.time_remaining.formatted);
-} else {
-  console.log('Chave inválida ou expirada');
-}
-```
-
-## Estrutura do Banco de Dados
-
-As chaves são armazenadas com as seguintes informações:
-
-- `key_id`: Identificador único (UUID)
-- `user_id`: ID do usuário (Discord ID)
-- `created_at`: Data e hora da criação
-- `expires_at`: Data e hora de expiração
-- `last_accessed`: Último acesso à chave
-- `usage_count`: Número de vezes que a chave foi usada
-- `status`: Status da chave (active, expired, revoked)
-- `ip_address`: IP de origem da criação
-- `created_by`: Origem da criação (api, bot, etc.)
-
-## Configuração
-
-- **Porta**: Configurável via `PORT` environment variable (padrão: 3000)
-- **Duração padrão**: 24 horas (configurável por requisição)
-- **Banco de dados**: SQLite local (`keys.db`)
-
-## Segurança
-
-- Helmet.js para headers de segurança
-- CORS configurado
-- Validação de entrada
-- Rate limiting recomendado para produção
-
-## Desenvolvimento
+The new version supports additional configuration options:
 
 ```bash
-# Modo de desenvolvimento com auto-reload
-npm run dev
+# Copy and configure environment variables
+cp .env.example .env
 
-# Verificar health da API
-curl http://localhost:3000/health
+# Key environment variables:
+PORT=3000
+NODE_ENV=production
+DATABASE_PATH=./keys.db
+CORS_ORIGIN=*
+RATE_LIMIT_WINDOW=15  # minutes
+RATE_LIMIT_MAX=100    # requests per window
+DEFAULT_KEY_HOURS=24
+MAX_KEY_HOURS=168
+LOG_LEVEL=info
 ```
 
-## 🚀 Deploy em Produção
+### API Compatibility
 
-### Railway (Gratuito)
+All existing API endpoints remain unchanged:
 
-1. Faça fork deste repositório
-2. Conecte ao [Railway.app](https://railway.app)
-3. Deploy automático configurado!
+- `POST /api/keys/create` - Create new access key
+- `GET /api/keys/validate/:keyId` - Validate a key
+- `GET /api/keys/info/:keyId` - Get key information
+- `GET /api/keys/user/:userId` - Get all keys for user
+- `GET /bind/:keyId.js` - Get validation JS file (now secure!)
+- `GET /test/:keyId` - Test validation with visual interface
+- `GET /health` - Health check (enhanced)
 
-**Arquivos incluídos para Railway:**
-- `railway.json` - Configuração do Railway
-- `Procfile` - Definição de processo
-- `.env.example` - Variáveis de ambiente
+## Security Considerations
 
-📖 **[Guia completo de deploy →](./RAILWAY_DEPLOY.md)**
+### What Was Fixed
 
-### Outras plataformas
+1. **XSS Prevention**: Removed `eval()` and implemented safe DOM manipulation
+2. **Input Validation**: All inputs are validated and sanitized
+3. **CSRF Protection**: Proper CORS configuration
+4. **Rate Limiting**: Protection against brute force attacks
+5. **Information Disclosure**: Proper error messages without stack traces in production
 
-Esta API é compatível com:
-- Heroku
-- Vercel
-- DigitalOcean App Platform
-- Google Cloud Run
-- AWS Elastic Beanstalk
+### Recommendations for Production
 
-## Licença
+1. Set `NODE_ENV=production`
+2. Configure appropriate `CORS_ORIGIN` instead of `*`
+3. Set up proper rate limiting values for your use case
+4. Use HTTPS in production
+5. Consider adding authentication for sensitive operations
+6. Monitor logs for security events
 
-ISC
+## Testing
+
+The restructured code includes comprehensive testing:
+
+```bash
+# Run the test suite
+npm test
+
+# The test covers:
+# - Health check
+# - Key creation
+# - Key validation
+# - Key information retrieval
+# - User key listing
+# - Error handling
+```
+
+## Benefits Summary
+
+| Aspect | Before | After |
+|--------|--------|-------|
+| **Security** | `eval()`, unsafe CSP, no validation | Safe DOM manipulation, proper CSP, input validation |
+| **Structure** | 407-line monolith | Modular architecture with separation of concerns |
+| **Maintainability** | Hard to modify, mixed concerns | Easy to extend, clear responsibilities |
+| **Error Handling** | Basic error responses | Comprehensive error handling with logging |
+| **Configuration** | Hardcoded values | Environment-based configuration |
+| **Testing** | Basic API test only | Comprehensive test coverage |
+| **Documentation** | Minimal inline docs | Full JSDoc documentation |
+
+## Future Enhancements
+
+The new modular structure makes it easy to add:
+
+1. **Authentication**: JWT token-based authentication
+2. **Database Abstraction**: Support for multiple database types
+3. **Caching**: Redis integration for performance
+4. **Monitoring**: Metrics and health monitoring
+5. **API Versioning**: Version management for API endpoints
+6. **WebSocket Support**: Real-time key status updates
+
+## Conclusion
+
+The restructured Kuroukai Free API v2.0 maintains full backward compatibility while significantly improving security, maintainability, and code quality. The modular architecture provides a solid foundation for future enhancements.
