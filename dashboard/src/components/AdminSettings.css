@@ -308,8 +308,9 @@
 
 .links {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-direction: row;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .doc-link {
@@ -343,28 +344,28 @@
   .sessions-controls {
     flex-direction: column;
   }
-  
+
   .refresh-btn,
   .danger-btn {
     width: 100%;
     justify-content: center;
   }
-  
+
   .table-header,
   .table-row {
     grid-template-columns: 1fr;
     gap: 8px;
   }
-  
+
   .header-cell {
     display: none;
   }
-  
+
   .table-cell {
     padding: 4px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   }
-  
+
   .table-cell:before {
     content: attr(data-label);
     font-weight: 600;
@@ -374,11 +375,11 @@
     min-width: 80px;
     display: inline-block;
   }
-  
+
   .env-vars {
     gap: 12px;
   }
-  
+
   .env-vars code {
     font-size: 0.8rem;
     padding: 10px;

@@ -13,12 +13,12 @@ function AdminSettings() {
   const fetchSessions = async () => {
     setLoading(true);
     setError('');
-    
+
     try {
       const response = await fetch('/admin/api/sessions', {
         credentials: 'include'
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setSessions(data.sessions || []);
@@ -82,27 +82,10 @@ function AdminSettings() {
 
           <div className="setting-card">
             <div className="setting-info">
-              <h4>Default Admin Password</h4>
-              <p>Default password for admin access</p>
-              <code className="password-display">admin123</code>
-            </div>
-          </div>
-
-          <div className="setting-card">
-            <div className="setting-info">
-              <h4>Temporary Admin Password</h4>
-              <p>Temporary password for test users</p>
-              <code className="password-display">temp456</code>
-            </div>
-          </div>
-
-          <div className="setting-card">
-            <div className="setting-info">
               <h4>Environment Variables</h4>
-              <p>Configure passwords via environment variables</p>
+              <p>Configure passwords via environment variables for security</p>
               <div className="env-vars">
                 <code>ADMIN_DEFAULT_PASSWORD=your_default_password</code>
-                <code>ADMIN_TEMP_PASSWORD=your_temp_password</code>
               </div>
             </div>
           </div>
@@ -123,16 +106,16 @@ function AdminSettings() {
           )}
 
           <div className="sessions-controls">
-            <button 
-              onClick={fetchSessions} 
+            <button
+              onClick={fetchSessions}
               className="refresh-btn"
               disabled={loading}
             >
               {loading ? '🔄' : '🔄'} Refresh Sessions
             </button>
-            
-            <button 
-              onClick={clearAllSessions} 
+
+            <button
+              onClick={clearAllSessions}
               className="danger-btn"
               disabled={loading}
             >
@@ -197,14 +180,6 @@ function AdminSettings() {
               <h4>API Version</h4>
               <p>Current version of Kuroukai Free API</p>
               <code className="version-display">v2.0.0</code>
-            </div>
-          </div>
-
-          <div className="setting-card">
-            <div className="setting-info">
-              <h4>Admin Panel URL</h4>
-              <p>Access URL for the admin dashboard</p>
-              <code className="url-display">{window.location.origin}/admin</code>
             </div>
           </div>
 

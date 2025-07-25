@@ -13,7 +13,7 @@ class AdminController {
     try {
       // Path to built dashboard
       const dashboardPath = path.join(__dirname, '../../dashboard/dist/index.html');
-      
+
       if (!fs.existsSync(dashboardPath)) {
         return res.status(500).json({
           success: false,
@@ -23,10 +23,10 @@ class AdminController {
 
       // Read and modify the HTML to include admin context
       let html = fs.readFileSync(dashboardPath, 'utf8');
-      
+
       // Fix asset paths to use admin prefix
       html = html.replace(/\/assets\//g, '/admin/assets/');
-      
+
       // Inject admin configuration into the page
       const adminConfig = `
         <script>
@@ -35,9 +35,9 @@ class AdminController {
           window.ADMIN_SESSION = '${req.adminSession.id}';
         </script>
       `;
-      
+
       html = html.replace('</head>', `${adminConfig}</head>`);
-      
+
       res.send(html);
     } catch (error) {
       logger.error('Error serving admin dashboard:', error);
@@ -65,7 +65,7 @@ class AdminController {
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -75,7 +75,7 @@ class AdminController {
             justify-content: center;
             color: #fff;
         }
-        
+
         .login-container {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
@@ -86,12 +86,12 @@ class AdminController {
             width: 100%;
             max-width: 400px;
         }
-        
+
         .login-header {
             text-align: center;
             margin-bottom: 30px;
         }
-        
+
         .login-header h1 {
             font-size: 2.5rem;
             font-weight: 700;
@@ -101,30 +101,30 @@ class AdminController {
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .login-header p {
             opacity: 0.8;
             font-size: 1.1rem;
         }
-        
+
         .login-form {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
-        
+
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
-        
+
         .form-group label {
             font-weight: 600;
             font-size: 0.9rem;
             opacity: 0.9;
         }
-        
+
         .form-group input {
             padding: 12px 16px;
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -134,7 +134,7 @@ class AdminController {
             font-size: 1rem;
             transition: all 0.3s ease;
         }
-        
+
         .form-group input:focus {
             outline: none;
             border-color: rgba(255, 255, 255, 0.6);
@@ -142,11 +142,11 @@ class AdminController {
             transform: translateY(-2px);
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
-        
+
         .form-group input::placeholder {
             color: rgba(255, 255, 255, 0.6);
         }
-        
+
         .login-button {
             padding: 14px 20px;
             background: linear-gradient(45deg, #4f46e5, #7c3aed);
@@ -159,23 +159,23 @@ class AdminController {
             transition: all 0.3s ease;
             margin-top: 10px;
         }
-        
+
         .login-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(79, 70, 229, 0.4);
         }
-        
+
         .login-button:active {
             transform: translateY(0);
         }
-        
+
         .login-button:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
-        
+
         .error-message {
             color: #fef2f2;
             background: rgba(239, 68, 68, 0.2);
@@ -186,7 +186,7 @@ class AdminController {
             font-size: 0.9rem;
             display: none;
         }
-        
+
         .loading {
             display: inline-block;
             width: 20px;
@@ -196,29 +196,9 @@ class AdminController {
             border-top-color: #fff;
             animation: spin 1s ease-in-out infinite;
         }
-        
+
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-        
-        .password-info {
-            margin-top: 20px;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .password-info h3 {
-            font-size: 0.9rem;
-            margin-bottom: 8px;
-            opacity: 0.9;
-        }
-        
-        .password-info p {
-            font-size: 0.8rem;
-            opacity: 0.7;
-            line-height: 1.4;
         }
     </style>
 </head>
@@ -228,31 +208,25 @@ class AdminController {
             <h1>Kuroukai</h1>
             <p>Admin Dashboard</p>
         </div>
-        
+
         <form class="login-form" id="loginForm">
             <div class="form-group">
                 <label for="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
                     placeholder="Enter admin password"
                     required
                 >
             </div>
-            
+
             <div class="error-message" id="errorMessage"></div>
-            
+
             <button type="submit" class="login-button" id="loginButton">
                 Sign In
             </button>
         </form>
-        
-        <div class="password-info">
-            <h3>Development Passwords:</h3>
-            <p><strong>Default:</strong> admin123<br>
-            <strong>Temp:</strong> temp456</p>
-        </div>
     </div>
 
     <script>
@@ -260,7 +234,7 @@ class AdminController {
         const passwordInput = document.getElementById('password');
         const loginButton = document.getElementById('loginButton');
         const errorMessage = document.getElementById('errorMessage');
-        
+
         function showError(message) {
             errorMessage.textContent = message;
             errorMessage.style.display = 'block';
@@ -268,7 +242,7 @@ class AdminController {
                 errorMessage.style.display = 'none';
             }, 5000);
         }
-        
+
         function setLoading(loading) {
             if (loading) {
                 loginButton.disabled = true;
@@ -278,18 +252,18 @@ class AdminController {
                 loginButton.innerHTML = 'Sign In';
             }
         }
-        
+
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const password = passwordInput.value;
             if (!password) {
                 showError('Please enter a password');
                 return;
             }
-            
+
             setLoading(true);
-            
+
             try {
                 const response = await fetch('/admin/auth/login', {
                     method: 'POST',
@@ -299,9 +273,9 @@ class AdminController {
                     body: JSON.stringify({ password }),
                     credentials: 'include'
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     window.location.href = '/admin';
                 } else {
@@ -314,7 +288,7 @@ class AdminController {
                 setLoading(false);
             }
         });
-        
+
         // Focus password input on load
         passwordInput.focus();
     </script>
@@ -330,7 +304,7 @@ class AdminController {
   async getAdminStats(req, res) {
     try {
       const keyService = require('../services/keyService');
-      
+
       // Get various statistics
       const [
         totalKeys,

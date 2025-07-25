@@ -5,6 +5,16 @@
   text-align: center;
 }
 
+/* Remove constraints for admin dashboard */
+#root:has(.admin-dashboard) {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+  height: 100vh;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
