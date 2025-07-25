@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "test": "node test-api.js"
+    "test": "node test-api.js",
+    "build": "cd dashboard && npm install && npm run build && cd .. && mkdir -p public && cp -r dashboard/dist/* public/",
+    "build:dashboard": "cd dashboard && npm run build",
+    "install:all": "npm install && cd dashboard && npm install"
   },
   "keywords": [
     "api",
