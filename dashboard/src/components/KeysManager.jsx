@@ -9,11 +9,11 @@ function KeysManager() {
   const [searchValue, setSearchValue] = useState('');
 
   // API base URL
-  const API_BASE = window.API_BASE || 'http://localhost:3000';
+  const API_BASE = window.API_BASE || 'https://kuroukai-free-api.up.railway.app';
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    
+
     if (!searchValue.trim()) {
       setError('Please enter a search value');
       return;
@@ -22,19 +22,19 @@ function KeysManager() {
     setLoading(true);
     setError('');
     setKeys([]);
-    
+
     let url = '';
     if (searchType === 'key') {
       url = `${API_BASE}/api/keys/info/${searchValue}`;
     } else {
       url = `${API_BASE}/api/keys/user/${searchValue}`;
     }
-    
+
     try {
       const res = await fetch(url);
       if (!res.ok) throw new Error('Not found or API error');
       const data = await res.json();
-      
+
       // Normalize keys to snake_case for table
       const normalize = (item) => ({
         keyId: item.key_id,
@@ -46,7 +46,7 @@ function KeysManager() {
         usage: item.usage_count || 0,
         lastAccessed: item.last_accessed
       });
-      
+
       if (searchType === 'key') {
         // API returns { data: {...} }
         setKeys(data && data.data ? [normalize(data.data)] : []);
@@ -62,17 +62,17 @@ function KeysManager() {
 
   const handleDelete = async (keyId) => {
     if (!window.confirm('Are you sure you want to delete this key?')) return;
-    
+
     setLoading(true);
     setError('');
-    
+
     try {
-      const res = await fetch(`${API_BASE}/api/keys/${keyId}`, { 
-        method: 'DELETE' 
+      const res = await fetch(`${API_BASE}/api/keys/${keyId}`, {
+        method: 'DELETE'
       });
-      
+
       if (!res.ok) throw new Error('Error deleting');
-      
+
       setKeys(keys.filter(k => k.keyId !== keyId));
     } catch (err) {
       setError('Error deleting: ' + err.message);
@@ -83,7 +83,7 @@ function KeysManager() {
   const handleToggleActive = async (keyId) => {
     setLoading(true);
     setError('');
-    
+
     try {
       const key = keys.find(k => k.keyId === keyId);
       const res = await fetch(`${API_BASE}/api/keys/${keyId}/active`, {
@@ -91,9 +91,9 @@ function KeysManager() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active: !key.active })
       });
-      
+
       if (!res.ok) throw new Error('Error updating status');
-      
+
       setKeys(keys.map(k => k.keyId === keyId ? { ...k, active: !k.active } : k));
     } catch (err) {
       setError('Error toggling active: ' + err.message);
@@ -104,19 +104,19 @@ function KeysManager() {
   const handleEditExpiry = async (keyId) => {
     const newExpiry = window.prompt('New expiration time (e.g.: 2025-12-31T23:59:59Z):');
     if (!newExpiry) return;
-    
+
     setLoading(true);
     setError('');
-    
+
     try {
       const res = await fetch(`${API_BASE}/api/keys/${keyId}/expiry`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ expiry: newExpiry })
       });
-      
+
       if (!res.ok) throw new Error('Error editing expiry');
-      
+
       setKeys(keys.map(k => k.keyId === keyId ? { ...k, expiry: newExpiry } : k));
     } catch (err) {
       setError('Error editing expiry: ' + err.message);
@@ -143,15 +143,15 @@ function KeysManager() {
       <div className="search-section">
         <form onSubmit={handleSearch} className="search-form">
           <div className="search-controls">
-            <select 
-              value={searchType} 
+            <select
+              value={searchType}
               onChange={(e) => setSearchType(e.target.value)}
               className="search-type"
             >
               <option value="key">Search by Key ID</option>
               <option value="user">Search by User ID</option>
             </select>
-            
+
             <input
               type="text"
               value={searchValue}
@@ -159,9 +159,9 @@ function KeysManager() {
               placeholder={searchType === 'key' ? 'Enter key ID...' : 'Enter user ID...'}
               className="search-input"
             />
-            
-            <button 
-              type="submit" 
+
+            <button
+              type="submit"
               className="search-button"
               disabled={loading}
             >
