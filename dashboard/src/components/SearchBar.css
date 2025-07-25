@@ -10,6 +10,27 @@
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
+  background: #ffffff;
+  color: #333333;
+}
+
+.search-bar select:focus,
+.search-bar input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
+.search-bar select option {
+  background: #ffffff;
+  color: #333333;
+  padding: 4px 8px;
+}
+
+.search-bar select option:checked,
+.search-bar select option:hover {
+  background: #1976d2;
+  color: #ffffff;
 }
 .search-bar button {
   padding: 6px 16px;

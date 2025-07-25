@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import AdminDashboard from './components/AdminDashboard';
 import StatusBar from './components/StatusBar';
@@ -9,10 +9,34 @@ function App() {
   const [keys, setKeys] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showingRecent, setShowingRecent] = useState(false);
 
   // Check if we're in admin mode
   const isAdminMode = window.ADMIN_MODE || false;
   const apiBase = window.API_BASE || 'https://kuroukai-free-api.up.railway.app';
+
+  // Load recent keys on component mount
+  useEffect(() => {
+    if (!isAdminMode) {
+      loadRecentKeys();
+    }
+  }, [isAdminMode]);
+
+  // Function to load recent keys (simulated by trying to fetch some sample data)
+  const loadRecentKeys = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // Since there's no specific "recent keys" endpoint, we'll show a message
+      // In a real implementation, this would call an API endpoint like `/api/keys/recent`
+      setKeys([]);
+      setShowingRecent(true);
+      setError(''); // Clear any previous errors
+    } catch {
+      setError('Unable to load recent keys');
+    }
+    setLoading(false);
+  };
 
   // If admin mode, render admin dashboard
   if (isAdminMode) {
@@ -24,6 +48,7 @@ function App() {
     setLoading(true);
     setError('');
     setKeys([]);
+    setShowingRecent(false); // Clear recent keys state when searching
     let url = '';
     if (type === 'key') {
       url = `${apiBase}/api/keys/info/${value}`;
@@ -127,6 +152,12 @@ function App() {
       <SearchBar onSearch={handleSearch} />
       {loading && <div className="dashboard-loading">Loading...</div>}
       {error && <div className="dashboard-error">{error}</div>}
+      {showingRecent && keys.length === 0 && !loading && !error && (
+        <div className="recent-keys-info">
+          <p>🔍 Search for keys by Key ID or User ID to view details.</p>
+          <p>📝 Recent keys will be displayed here when available.</p>
+        </div>
+      )}
       <KeysTable
         keys={keys}
         onDelete={handleDelete}

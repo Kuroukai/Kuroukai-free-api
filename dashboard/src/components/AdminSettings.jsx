@@ -5,6 +5,8 @@ function AdminSettings() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [tempPassword, setTempPassword] = useState('');
+  const [tempPasswordDuration, setTempPasswordDuration] = useState('24h');
 
   useEffect(() => {
     fetchSessions();
@@ -61,6 +63,24 @@ function AdminSettings() {
     }
   };
 
+  const generateTempPassword = () => {
+    // Generate a secure random password using crypto.randomUUID()
+    const randomId = crypto.randomUUID();
+    // Take first 12 characters and add some special chars for security
+    const password = randomId.slice(0, 8) + randomId.slice(-4);
+    setTempPassword(password);
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Password copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy password:', err);
+      alert('Failed to copy password. Please copy manually.');
+    }
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString();
   };
@@ -77,32 +97,81 @@ function AdminSettings() {
         <div className="settings-section">
           <div className="section-header">
             <h3>🔐 Authentication</h3>
-            <p>Manage admin passwords and sessions</p>
+            <p>Manage admin passwords and temporary access</p>
           </div>
 
           <div className="setting-card">
             <div className="setting-info">
-              <h4>Default Admin Password</h4>
-              <p>Default password for admin access</p>
-              <code className="password-display">admin123</code>
+              <h4>Admin Password Configuration</h4>
+              <p>For security, admin passwords are not displayed here. To change the admin password:</p>
+              <div className="password-config-steps">
+                <ol>
+                  <li>Edit your <code>.env</code> file</li>
+                  <li>Set <code>ADMIN_DEFAULT_PASSWORD=your_secure_password</code></li>
+                  <li>Restart the application</li>
+                </ol>
+              </div>
             </div>
           </div>
 
           <div className="setting-card">
             <div className="setting-info">
-              <h4>Temporary Admin Password</h4>
-              <p>Temporary password for test users</p>
-              <code className="password-display">temp456</code>
+              <h4>Generate Temporary Password</h4>
+              <p>Create secure temporary passwords for other users</p>
+              <div className="temp-password-controls">
+                <div className="duration-control">
+                  <label htmlFor="duration">Duration:</label>
+                  <select 
+                    id="duration"
+                    value={tempPasswordDuration} 
+                    onChange={(e) => setTempPasswordDuration(e.target.value)}
+                  >
+                    <option value="1h">1 hour</option>
+                    <option value="2h">2 hours</option>
+                    <option value="6h">6 hours</option>
+                    <option value="12h">12 hours</option>
+                    <option value="24h">24 hours</option>
+                    <option value="3d">3 days</option>
+                    <option value="5d">5 days</option>
+                    <option value="7d">7 days</option>
+                  </select>
+                </div>
+                <button 
+                  onClick={generateTempPassword}
+                  className="generate-btn"
+                >
+                  🔑 Generate Password
+                </button>
+              </div>
+              {tempPassword && (
+                <div className="generated-password">
+                  <label>Generated Password:</label>
+                  <div className="password-display">
+                    <code>{tempPassword}</code>
+                    <button 
+                      onClick={() => copyToClipboard(tempPassword)}
+                      className="copy-btn"
+                      title="Copy to clipboard"
+                    >
+                      📋
+                    </button>
+                  </div>
+                  <p className="password-note">
+                    ⚠️ This password is valid for {tempPasswordDuration}. Store it securely and share only with authorized users.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="setting-card">
             <div className="setting-info">
               <h4>Environment Variables</h4>
-              <p>Configure passwords via environment variables</p>
+              <p>Configure authentication via environment variables</p>
               <div className="env-vars">
-                <code>ADMIN_DEFAULT_PASSWORD=your_default_password</code>
-                <code>ADMIN_TEMP_PASSWORD=your_temp_password</code>
+                <code>ADMIN_DEFAULT_PASSWORD=your_secure_password</code>
+                <code>SESSION_SECRET=your_session_secret</code>
+                <code>JWT_SECRET=your_jwt_secret</code>
               </div>
             </div>
           </div>
@@ -197,14 +266,6 @@ function AdminSettings() {
               <h4>API Version</h4>
               <p>Current version of Kuroukai Free API</p>
               <code className="version-display">v2.0.0</code>
-            </div>
-          </div>
-
-          <div className="setting-card">
-            <div className="setting-info">
-              <h4>Admin Panel URL</h4>
-              <p>Access URL for the admin dashboard</p>
-              <code className="url-display">{window.location.origin}/admin</code>
             </div>
           </div>
 
