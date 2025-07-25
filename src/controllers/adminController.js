@@ -24,6 +24,9 @@ class AdminController {
       // Read and modify the HTML to include admin context
       let html = fs.readFileSync(dashboardPath, 'utf8');
       
+      // Fix asset paths to use admin prefix
+      html = html.replace(/\/assets\//g, '/admin/assets/');
+      
       // Inject admin configuration into the page
       const adminConfig = `
         <script>
@@ -305,6 +308,7 @@ class AdminController {
                     showError(data.message || 'Invalid password');
                 }
             } catch (error) {
+                console.error('Login error:', error);
                 showError('Connection error. Please try again.');
             } finally {
                 setLoading(false);

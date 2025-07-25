@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const adminController = require('../controllers/adminController');
 const adminAuth = require('../middleware/adminAuth');
 const { body } = require('express-validator');
@@ -16,6 +17,9 @@ router.post('/auth/logout', adminAuth.logout.bind(adminAuth));
 
 // Admin login page (public)
 router.get('/login', adminController.getAdminLogin.bind(adminController));
+
+// Serve static dashboard assets WITHOUT authentication (public assets)
+router.use('/assets', express.static(path.join(__dirname, '../../dashboard/dist/assets')));
 
 // Middleware to check auth for protected routes
 function requireAuthOrRedirect(req, res, next) {
@@ -41,8 +45,5 @@ router.get('/api/stats', adminController.getAdminStats.bind(adminController));
 router.get('/api/session', adminAuth.getSessionInfo.bind(adminAuth));
 router.get('/api/sessions', adminAuth.getActiveSessions.bind(adminAuth));
 router.delete('/api/sessions', adminAuth.clearAllSessions.bind(adminAuth));
-
-// Serve static dashboard assets with authentication
-router.use('/assets', express.static('dashboard/dist/assets'));
 
 module.exports = router;

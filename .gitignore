@@ -57,3 +57,8 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+
+# Temporary files
+cookies.txt
+*.tmp
+*.temp
