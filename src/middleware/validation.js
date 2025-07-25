@@ -1,5 +1,6 @@
 const { sanitizeInput, isValidUUID } = require('../utils/keyUtils');
 const config = require('../config');
+const { validationResult } = require('express-validator');
 
 /**
  * Validation middleware for creating keys
@@ -91,8 +92,24 @@ function validateUserId(req, res, next) {
   next();
 }
 
+/**
+ * Handle express-validator validation errors
+ */
+function handleValidationErrors(req, res, next) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation errors',
+      errors: errors.array()
+    });
+  }
+  next();
+}
+
 module.exports = {
   validateCreateKey,
   validateKeyId,
-  validateUserId
+  validateUserId,
+  handleValidationErrors
 };

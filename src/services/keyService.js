@@ -239,6 +239,93 @@ class KeyService {
       });
     });
   }
+
+  /**
+   * Get total count of keys
+   * @returns {Promise<number>} Total key count
+   */
+  async getTotalKeysCount() {
+    return new Promise((resolve, reject) => {
+      const db = database.getDb();
+      const sql = 'SELECT COUNT(*) as count FROM access_keys';
+      
+      db.get(sql, [], (err, row) => {
+        if (err) {
+          logger.error('Failed to get total keys count:', err);
+          reject(err);
+          return;
+        }
+        
+        resolve(row.count || 0);
+      });
+    });
+  }
+
+  /**
+   * Get count of active keys
+   * @returns {Promise<number>} Active key count
+   */
+  async getActiveKeysCount() {
+    return new Promise((resolve, reject) => {
+      const db = database.getDb();
+      const sql = 'SELECT COUNT(*) as count FROM access_keys WHERE expires_at > datetime("now") AND status = "active"';
+      
+      db.get(sql, [], (err, row) => {
+        if (err) {
+          logger.error('Failed to get active keys count:', err);
+          reject(err);
+          return;
+        }
+        
+        resolve(row.count || 0);
+      });
+    });
+  }
+
+  /**
+   * Get count of expired keys
+   * @returns {Promise<number>} Expired key count
+   */
+  async getExpiredKeysCount() {
+    return new Promise((resolve, reject) => {
+      const db = database.getDb();
+      const sql = 'SELECT COUNT(*) as count FROM access_keys WHERE expires_at <= datetime("now") OR status = "expired"';
+      
+      db.get(sql, [], (err, row) => {
+        if (err) {
+          logger.error('Failed to get expired keys count:', err);
+          reject(err);
+          return;
+        }
+        
+        resolve(row.count || 0);
+      });
+    });
+  }
+
+  /**
+   * Get recent keys within specified hours
+   * @param {number} hours - Hours to look back
+   * @returns {Promise<Array>} Recent keys
+   */
+  async getRecentKeys(hours = 24) {
+    return new Promise((resolve, reject) => {
+      const db = database.getDb();
+      const sql = `SELECT * FROM access_keys 
+                   WHERE created_at >= datetime('now', '-${hours} hours')
+                   ORDER BY created_at DESC`;
+      
+      db.all(sql, [], (err, rows) => {
+        if (err) {
+          logger.error('Failed to get recent keys:', err);
+          reject(err);
+          return;
+        }
+        
+        resolve(rows || []);
+      });
+    });
+  }
 }
 
 module.exports = new KeyService();
