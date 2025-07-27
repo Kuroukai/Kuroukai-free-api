@@ -53,7 +53,8 @@ function KeysManager() {
         // API returns { data: {...} }
         setKeys(data && data.data ? [normalize(data.data)] : []);
       } else {
-        setKeys(Array.isArray(data) ? data.map(normalize) : []);
+        // API returns { msg, code, user_id, keys: [...] }
+        setKeys(data && data.keys ? data.keys.map(normalize) : []);
       }
     } catch (err) {
       setError('Error searching: ' + err.message);
