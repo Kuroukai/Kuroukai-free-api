@@ -7,6 +7,7 @@ function KeysManager() {
   const [error, setError] = useState('');
   const [searchType, setSearchType] = useState('key');
   const [searchValue, setSearchValue] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
 
   // API base URL
   const API_BASE = window.API_BASE || 'https://kuroukai-free-api.up.railway.app';
@@ -22,6 +23,7 @@ function KeysManager() {
     setLoading(true);
     setError('');
     setKeys([]);
+    setHasSearched(true);
 
     let url = '';
     if (searchType === 'key') {
@@ -155,7 +157,14 @@ function KeysManager() {
             <input
               type="text"
               value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              onChange={(e) => {
+                setSearchValue(e.target.value);
+                // Só limpa erro e hasSearched se o campo ficar completamente vazio
+                if (e.target.value === '') {
+                  setHasSearched(false);
+                  setError('');
+                }
+              }}
               placeholder={searchType === 'key' ? 'Enter key ID...' : 'Enter user ID...'}
               className="search-input"
             />
@@ -169,13 +178,6 @@ function KeysManager() {
             </button>
           </div>
         </form>
-
-        {error && (
-          <div className="error-message">
-            <span className="error-icon">⚠️</span>
-            {error}
-          </div>
-        )}
       </div>
 
       <div className="results-section">
@@ -186,7 +188,7 @@ function KeysManager() {
           </div>
         )}
 
-        {!loading && keys.length === 0 && searchValue && !error && (
+        {!loading && keys.length === 0 && searchValue && hasSearched && (
           <div className="empty-state">
             <div className="empty-icon">🔍</div>
             <h3>No keys found</h3>
@@ -194,11 +196,21 @@ function KeysManager() {
           </div>
         )}
 
-        {!loading && keys.length === 0 && !searchValue && !error && (
+        {!loading && keys.length === 0 && (!hasSearched || !searchValue) && (
           <div className="empty-state">
-            <div className="empty-icon">🔑</div>
-            <h3>Ready to search</h3>
-            <p>Enter a key ID or user ID above to get started</p>
+            {error ? (
+              <>
+                <div className="empty-icon">⚠️</div>
+                <h3>Search Error</h3>
+                <p>{error}</p>
+              </>
+            ) : (
+              <>
+                <div className="empty-icon">🔑</div>
+                <h3>Ready to search</h3>
+                <p>Enter a key ID or user ID above to get started</p>
+              </>
+            )}
           </div>
         )}
 
