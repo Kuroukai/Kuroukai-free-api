@@ -54,7 +54,12 @@ function KeysManager() {
         setKeys(data && data.data ? [normalize(data.data)] : []);
       } else {
         // API returns { msg, code, user_id, keys: [...] }
-        setKeys(data && data.keys ? data.keys.map(normalize) : []);
+        // For user search, use the user_id from the response root
+        const userIdFromResponse = data.user_id;
+        setKeys(data && data.keys ? data.keys.map(item => ({
+          ...normalize(item),
+          userId: userIdFromResponse
+        })) : []);
       }
     } catch (err) {
       setError('Error searching: ' + err.message);

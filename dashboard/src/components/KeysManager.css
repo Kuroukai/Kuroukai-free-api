@@ -149,11 +149,21 @@
 }
 
 .results-section {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.03) !important;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   backdrop-filter: blur(10px);
   overflow: hidden;
+}
+
+.results-section table,
+.results-section thead,
+.results-section tbody,
+.results-section tr,
+.results-section th,
+.results-section td {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 
 .loading-state,
@@ -197,12 +207,14 @@
 
 .keys-table-container {
   overflow-x: auto;
+  background: transparent;
 }
 
 .keys-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  background: transparent;
 }
 
 .keys-table th,
@@ -210,11 +222,12 @@
   padding: 16px 20px;
   text-align: left;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
 }
 
 .keys-table th {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -222,12 +235,25 @@
 }
 
 .keys-table td {
-  color: #ffffff;
+  color: #ffffff !important;
   font-size: 0.9rem;
+  background: transparent !important;
+}
+
+.keys-table tbody tr {
+  background: transparent !important;
 }
 
 .keys-table tr:hover {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.keys-table thead tr:hover {
+  background: transparent !important;
+}
+
+.keys-table thead tr:hover th {
+  background: rgba(255, 255, 255, 0.05) !important;
 }
 
 .keys-table tr.expired {
@@ -235,17 +261,24 @@
 }
 
 .key-id code {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08) !important;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   padding: 4px 8px;
   font-family: 'Monaco', 'Menlo', monospace;
   font-size: 0.8rem;
-  color: #7289da;
+  color: #7289da !important;
 }
 
 .user-id {
   font-weight: 500;
+  color: #ffffff !important;
+}
+
+.user-id:empty::after {
+  content: 'N/A';
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
 }
 
 .status-badge {
