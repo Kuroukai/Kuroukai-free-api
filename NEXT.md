@@ -12,3 +12,15 @@
 - **List of keys** (all keys as a file, or only the currently active one)
 
 ---
+
+## Location: KeysManager – Key Blur Feature
+
+**Concept:** Blur sensitive key data for security, with hover to reveal and click to copy functionality.
+
+### Planned Features:
+- **Key ID blur effect** (CSS blur filter applied by default)
+- **Hover to reveal** (remove blur on mouse hover)
+- **Click to copy** (copy key to clipboard when clicked)
+
+---
+
