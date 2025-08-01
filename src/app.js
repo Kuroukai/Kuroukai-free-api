@@ -23,6 +23,10 @@ const logger = new Logger(config.logging.level);
 class Application {
   constructor() {
     this.app = express();
+    // Ativa trust proxy só em produção para evitar problemas com express-rate-limit localmente
+    if (process.env.NODE_ENV === 'production' || config.nodeEnv === 'production') {
+      this.app.set('trust proxy', true);
+    }
     this.server = null;
   }
 

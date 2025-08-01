@@ -17,7 +17,7 @@ function getExpirationDate(hours = 24) {
   if (typeof hours !== 'number' || hours <= 0) {
     throw new Error('Hours must be a positive number');
   }
-  
+
   const expiry = new Date();
   expiry.setHours(expiry.getHours() + hours);
   return expiry.toISOString();
@@ -30,7 +30,7 @@ function getExpirationDate(hours = 24) {
  */
 function isKeyValid(key) {
   if (!key) return false;
-  
+
   const now = new Date().toISOString();
   return key.status === 'active' && key.expires_at > now;
 }
@@ -44,20 +44,20 @@ function getRemainingTime(expiryDate) {
   const now = new Date();
   const expiry = new Date(expiryDate);
   const diff = expiry - now;
-  
+
   if (diff <= 0) {
-    return { 
-      expired: true, 
+    return {
+      expired: true,
       remaining: 0,
       hours: 0,
       minutes: 0,
       formatted: 'Expired'
     };
   }
-  
+
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  
+
   return {
     expired: false,
     remaining: diff,
@@ -76,7 +76,7 @@ function sanitizeInput(input) {
   if (typeof input !== 'string') {
     return '';
   }
-  
+
   return input
     .replace(/[<>\"']/g, '') // Remove potentially dangerous characters
     .trim()
@@ -94,15 +94,22 @@ function isValidUUID(uuid) {
 }
 
 /**
- * Extract client IP address from request
+ * Extract client IP address from request (prioritizing real user IP)
  * @param {Object} req - Express request object
  * @returns {string} IP address
  */
 function getClientIp(req) {
-  return req.ip || 
-         req.connection.remoteAddress || 
-         req.socket.remoteAddress ||
-         (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
+  const xForwardedFor = req.headers['x-forwarded-for'];
+  if (xForwardedFor && typeof xForwardedFor === 'string') {
+    const ips = xForwardedFor.split(',').map(ip => ip.trim()).filter(Boolean);
+    if (ips.length > 0) {
+      return ips[0];
+    }
+  }
+  return req.ip ||
+         (req.connection && req.connection.remoteAddress) ||
+         (req.socket && req.socket.remoteAddress) ||
+         (req.connection && req.connection.socket ? req.connection.socket.remoteAddress : null) ||
          'unknown';
 }
 

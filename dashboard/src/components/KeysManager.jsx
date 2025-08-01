@@ -132,6 +132,10 @@ function KeysManager() {
     setLoading(false);
   };
 
+  const handleUserIdClick = (userId) => {
+    console.log(`User ID clicked: ${userId}`);
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'Unknown';
     return new Date(dateString).toLocaleString();
@@ -240,7 +244,11 @@ function KeysManager() {
                     <td className="key-id">
                       <code>{key.keyId}</code>
                     </td>
-                    <td className="user-id">{key.userId}</td>
+                    <td className="user-id">
+                      <button onClick={() => handleUserIdClick(key.userId)}>
+                        {key.userId}
+                      </button>
+                    </td>
                     <td>
                       <span className={`status-badge ${key.active && !isExpired(key.expiry) ? 'active' : 'inactive'}`}>
                         {key.active && !isExpired(key.expiry) ? 'Active' : 'Inactive'}
