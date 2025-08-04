@@ -136,6 +136,18 @@ function KeysManager() {
     console.log(`User ID clicked: ${userId}`);
   };
 
+  // Copiar keyId ao clicar
+  const [copiedKeyId, setCopiedKeyId] = useState(null);
+  const handleKeyIdClick = async (keyId) => {
+    try {
+      await navigator.clipboard.writeText(keyId);
+      setCopiedKeyId(keyId);
+      setTimeout(() => setCopiedKeyId(null), 1000);
+    } catch (err) {
+      // Silencioso, sem mensagem
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'Unknown';
     return new Date(dateString).toLocaleString();
@@ -241,8 +253,36 @@ function KeysManager() {
               <tbody>
                 {keys.map((key) => (
                   <tr key={key.keyId} className={isExpired(key.expiry) ? 'expired' : ''}>
-                    <td className="key-id">
-                      <code>{key.keyId}</code>
+                    <td className="key-id" style={{ position: 'relative' }}>
+                      <button
+                        onClick={() => handleKeyIdClick(key.keyId)}
+                        style={{ background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', outline: 'none' }}
+                        title="id-clipboard"
+                        className="copy-keyid-btn"
+                        tabIndex={0}
+                        onMouseDown={e => e.preventDefault()}
+                      >
+                        <code>{key.keyId}</code>
+                      </button>
+                      {copiedKeyId === key.keyId && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '-22px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            background: '#222',
+                            color: '#fff',
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            pointerEvents: 'none',
+                            zIndex: 10
+                          }}
+                        >
+                          Copied!
+                        </span>
+                      )}
                     </td>
                     <td className="user-id">
                       <button onClick={() => handleUserIdClick(key.userId)}>
