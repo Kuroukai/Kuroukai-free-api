@@ -14,6 +14,23 @@ class KeyService {
    * @returns {Promise<Object>} Created key data
    */
   async createKey(userId, hours, ipAddress) {
+    // First, enforce single active key per user
+    const existing = await this.getActiveKeyForUser(userId);
+    if (existing) {
+      const timeInfo = getRemainingTime(existing.expires_at);
+      logger.warn('User attempted to create a key while having an active one', { userId, keyId: existing.key_id });
+      return {
+        error: 'User already has an active key',
+        code: 409,
+        data: {
+          key_id: existing.key_id,
+          user_id: existing.user_id,
+          expires_at: existing.expires_at,
+          time_remaining: timeInfo
+        }
+      };
+    }
+
     return new Promise((resolve, reject) => {
       const keyId = generateKey();
       const expiresAt = getExpirationDate(hours);
@@ -64,6 +81,32 @@ class KeyService {
         }
 
         resolve(row || null);
+      });
+    });
+  }
+
+  /**
+   * Get currently active key for a user (not expired and status=active)
+   * @param {string} userId
+   * @returns {Promise<Object|null>} Active key row or null
+   */
+  async getActiveKeyForUser(userId) {
+    return new Promise((resolve, reject) => {
+      const db = database.getDb();
+      const sql = `SELECT * FROM access_keys
+                   WHERE user_id = ? AND status = 'active'
+                   ORDER BY created_at DESC`;
+      db.get(sql, [userId], (err, row) => {
+        if (err) {
+          logger.error('Failed to query active key for user:', err);
+          reject(err);
+          return;
+        }
+        if (row && isKeyValid(row)) {
+          resolve(row);
+        } else {
+          resolve(null);
+        }
       });
     });
   }
@@ -149,12 +192,13 @@ class KeyService {
           return;
         }
 
-        const keys = rows.map(row => {
+    const keys = rows.map(row => {
           const valid = isKeyValid(row);
           const timeInfo = getRemainingTime(row.expires_at);
 
           return {
             key_id: row.key_id,
+      user_id: row.user_id,
             valid,
             status: row.status,
             created_at: row.created_at,
@@ -248,14 +292,14 @@ class KeyService {
     return new Promise((resolve, reject) => {
       const db = database.getDb();
       const sql = 'SELECT COUNT(*) as count FROM access_keys';
-      
+
       db.get(sql, [], (err, row) => {
         if (err) {
           logger.error('Failed to get total keys count:', err);
           reject(err);
           return;
         }
-        
+
         resolve(row.count || 0);
       });
     });
@@ -269,14 +313,14 @@ class KeyService {
     return new Promise((resolve, reject) => {
       const db = database.getDb();
       const sql = 'SELECT COUNT(*) as count FROM access_keys WHERE expires_at > datetime("now") AND status = "active"';
-      
+
       db.get(sql, [], (err, row) => {
         if (err) {
           logger.error('Failed to get active keys count:', err);
           reject(err);
           return;
         }
-        
+
         resolve(row.count || 0);
       });
     });
@@ -290,14 +334,14 @@ class KeyService {
     return new Promise((resolve, reject) => {
       const db = database.getDb();
       const sql = 'SELECT COUNT(*) as count FROM access_keys WHERE expires_at <= datetime("now") OR status = "expired"';
-      
+
       db.get(sql, [], (err, row) => {
         if (err) {
           logger.error('Failed to get expired keys count:', err);
           reject(err);
           return;
         }
-        
+
         resolve(row.count || 0);
       });
     });
@@ -311,17 +355,17 @@ class KeyService {
   async getRecentKeys(hours = 24) {
     return new Promise((resolve, reject) => {
       const db = database.getDb();
-      const sql = `SELECT * FROM access_keys 
+      const sql = `SELECT * FROM access_keys
                    WHERE created_at >= datetime('now', '-${hours} hours')
                    ORDER BY created_at DESC`;
-      
+
       db.all(sql, [], (err, rows) => {
         if (err) {
           logger.error('Failed to get recent keys:', err);
           reject(err);
           return;
         }
-        
+
         resolve(rows || []);
       });
     });

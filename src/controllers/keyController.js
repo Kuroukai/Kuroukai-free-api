@@ -32,6 +32,14 @@ class KeyController {
 
       const keyData = await keyService.createKey(user_id, hours, ipAddress);
 
+      if (keyData && keyData.error && keyData.code === 409) {
+        return res.status(409).json({
+          error: keyData.error,
+          code: 409,
+          data: keyData.data
+        });
+      }
+
       res.json({
         msg: 'Key created successfully',
         code: 200,
