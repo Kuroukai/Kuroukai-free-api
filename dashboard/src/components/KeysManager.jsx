@@ -9,8 +9,9 @@ function KeysManager() {
   const [searchValue, setSearchValue] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
 
-  // API base URL
-  const API_BASE = window.API_BASE || 'https://kuroukai-free-api.up.railway.app';
+  // API base URL - use same pattern as App.jsx
+  const API_BASE = window.API_BASE || 
+    import.meta.env.DEV_API_BASE || 'https://kuroukai-free-api.up.railway.app';
 
   const handleSearch = async (e) => {
     e.preventDefault();

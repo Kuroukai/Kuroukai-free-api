@@ -11,8 +11,17 @@ function App() {
   const [error, setError] = useState('');
 
   // Check if we're in admin mode
-  const isAdminMode = window.ADMIN_MODE || false;
-  const apiBase = window.API_BASE || 'https://kuroukai-free-api.up.railway.app';
+  // In production: injected by server as window.ADMIN_MODE
+  // In development/preview: use environment variable or default
+  const isAdminMode = window.ADMIN_MODE !== undefined 
+    ? window.ADMIN_MODE 
+    : (import.meta.env.DEV_ADMIN_MODE || false);
+    
+  // Get API base URL
+  // In production: injected by server as window.API_BASE  
+  // In development/preview: use environment variable or default
+  const apiBase = window.API_BASE || 
+    import.meta.env.DEV_API_BASE || 'https://kuroukai-free-api.up.railway.app';
 
   // If admin mode, render admin dashboard
   if (isAdminMode) {
